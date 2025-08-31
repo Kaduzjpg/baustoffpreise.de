@@ -1,3 +1,8 @@
+export function generateStaticParams() {
+  const slugs = ['beton', 'ziegel', 'dämmung', 'holz', 'putz', 'mörtel']
+  return slugs.map((slug) => ({ slug }))
+}
+
 interface Props {
   params: { slug: string }
 }

@@ -1,3 +1,8 @@
+export function generateStaticParams() {
+  const ids = Array.from({ length: 12 }, (_, i) => String(i + 1))
+  return ids.map((id) => ({ id }))
+}
+
 interface Props {
   params: { id: string }
 }
