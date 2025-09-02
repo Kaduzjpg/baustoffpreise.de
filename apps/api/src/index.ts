@@ -46,10 +46,14 @@ app.use('/api/dealers', dealersRouter);
 app.use('/api/inquiry', inquiryRouter);
 app.use('/api/products', productsRouter);
 
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   // Central error handler
   console.error(err);
-  res.status(err?.status || 500).json({ error: 'Internal Server Error' });
+  if (res.headersSent) {
+    return next(err);
+  }
+  const status = typeof err?.status === 'number' ? err.status : 500;
+  res.status(status).json({ error: status >= 500 ? 'Internal Server Error' : err?.message || 'Error' });
 });
 
 app.listen(Number(env.PORT), () => {

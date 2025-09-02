@@ -10,8 +10,7 @@ router.get('/categories', async (_req, res, next) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(503).json({ error: 'db_unavailable' });
-    next(err);
+    return res.status(503).json({ error: 'db_unavailable' });
   }
 });
 
@@ -22,8 +21,7 @@ router.get('/list', async (_req, res, next) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(503).json({ error: 'db_unavailable' });
-    next(err);
+    return res.status(503).json({ error: 'db_unavailable' });
   }
 });
 
@@ -36,8 +34,7 @@ router.get('/by-slug/:slug', async (req, res, next) => {
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(503).json({ error: 'db_unavailable' });
-    next(err);
+    return res.status(503).json({ error: 'db_unavailable' });
   }
 });
 
@@ -50,8 +47,7 @@ router.get('/category/by-slug/:slug', async (req, res, next) => {
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(503).json({ error: 'db_unavailable' });
-    next(err);
+    return res.status(503).json({ error: 'db_unavailable' });
   }
 });
 
