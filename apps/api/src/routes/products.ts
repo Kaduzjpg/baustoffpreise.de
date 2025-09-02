@@ -6,7 +6,7 @@ const router = Router();
 router.get('/categories', async (_req, res, next) => {
   try {
     const [rows] = await pool.query<CategoryRow[]>(
-      'SELECT id, name, slug, description FROM category ORDER BY name'
+      'SELECT id, name, slug, description FROM `Category` ORDER BY name'
     );
     res.json(rows);
   } catch (err) {
@@ -18,7 +18,7 @@ router.get('/categories', async (_req, res, next) => {
 router.get('/list', async (_req, res, next) => {
   try {
     const [rows] = await pool.query<ProductRow[]>(
-      'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM product ORDER BY name'
+      'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` ORDER BY name'
     );
     res.json(rows);
   } catch (err) {
@@ -30,7 +30,7 @@ router.get('/list', async (_req, res, next) => {
 router.get('/by-slug/:slug', async (req, res, next) => {
   try {
     const [rows] = await pool.query<ProductRow[]>(
-      'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM product WHERE slug = ? LIMIT 1',
+      'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` WHERE slug = ? LIMIT 1',
       [req.params.slug]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -44,7 +44,7 @@ router.get('/by-slug/:slug', async (req, res, next) => {
 router.get('/category/by-slug/:slug', async (req, res, next) => {
   try {
     const [rows] = await pool.query<CategoryRow[]>(
-      'SELECT id, name, slug, description FROM category WHERE slug = ? LIMIT 1',
+      'SELECT id, name, slug, description FROM `Category` WHERE slug = ? LIMIT 1',
       [req.params.slug]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -59,8 +59,8 @@ router.get('/by-category/:slug', async (req, res, next) => {
   try {
     const [rows] = await pool.query<ProductRow[]>(
       `SELECT p.id, p.categoryId, p.name, p.slug, p.unit, p.imageUrl, p.description, p.keywords
-       FROM product p
-       JOIN category c ON c.id = p.categoryId
+       FROM \`Product\` p
+       JOIN \`Category\` c ON c.id = p.categoryId
        WHERE c.slug = ?
        ORDER BY p.name`,
       [req.params.slug]
