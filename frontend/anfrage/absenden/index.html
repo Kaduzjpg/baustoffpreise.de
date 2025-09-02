@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anfrage absenden – Baustoffpreisevergleichen.de</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-900">
+  <main class="max-w-[1200px] mx-auto px-4 py-8">
+    <h1 class="text-2xl font-semibold mb-6">Anfrage absenden</h1>
+    <form id="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-2">
+        <label class="text-sm font-medium">Name</label>
+        <input name="customerName" class="border rounded px-3 py-2" required />
+      </div>
+      <div class="space-y-2">
+        <label class="text-sm font-medium">E-Mail</label>
+        <input name="customerEmail" type="email" class="border rounded px-3 py-2" required />
+      </div>
+      <div class="space-y-2">
+        <label class="text-sm font-medium">Telefon (optional)</label>
+        <input name="customerPhone" class="border rounded px-3 py-2" />
+      </div>
+      <div class="space-y-2">
+        <label class="text-sm font-medium">PLZ</label>
+        <input name="zip" pattern="\\d{5}" class="border rounded px-3 py-2" required />
+      </div>
+      <div class="space-y-2">
+        <label class="text-sm font-medium">Radius (1–200 km)</label>
+        <input name="radius" type="number" min="1" max="200" value="25" class="border rounded px-3 py-2" required />
+      </div>
+      <div class="md:col-span-2 space-y-2">
+        <label class="text-sm font-medium">Notiz (optional)</label>
+        <textarea name="note" class="border rounded px-3 py-2" rows="4"></textarea>
+      </div>
+      <div class="md:col-span-2">
+        <button class="px-4 py-2 rounded bg-brand hover:bg-brand-dark text-white" type="submit">Absenden</button>
+      </div>
+    </form>
+  </main>
+  <script type="module">
+    import { getCart, clearCart } from '/assets/js/cart.js';
+    import { validateInquiry, showToast } from '/assets/js/ui.js';
+    import { submitInquiry } from '/assets/js/api.js';
+    const form = document.getElementById('form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      const cart = getCart();
+      const payload = { ...data, items: cart.items.map(i => ({ productId: i.productId, quantity: Number(i.quantity), note: i.note || '' })), radius: Number(data.radius) };
+      const { valid, errors } = validateInquiry(payload);
+      if (!valid) { showToast('Bitte Eingaben prüfen', 'error'); console.warn(errors); return; }
+      try {
+        const res = await submitInquiry(payload);
+        clearCart();
+        location.href = '/danke/?id=' + res.inquiryId + '&n=' + res.dealersNotified;
+      } catch (err) {
+        showToast('Senden fehlgeschlagen', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
+

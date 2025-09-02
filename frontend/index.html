@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baustoffe vergleichen – Anfrage stellen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#16a34a', dark: '#0f7a37' } } } } };</script>
+  <meta name="description" content="Produkte wählen, Anfrage senden – Händler im Umkreis antworten direkt per Mail." />
+</head>
+<body class="bg-white text-gray-900" style="font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;">
+  <header class="border-b border-gray-100">
+    <div class="max-w-[1200px] mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="font-semibold text-xl">Baustoffpreise<span class="text-brand">vergleichen</span>.de</a>
+      <nav class="text-sm">
+        <a href="/kategorien/" class="hover:text-brand">Kategorien</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="max-w-[1200px] mx-auto px-4 py-12 grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-semibold leading-tight">Finde Baustoffe in deiner Nähe</h1>
+        <p class="mt-4 text-gray-600">Produkte auswählen, Anfrage mit PLZ und Radius absenden – Händler im Umkreis melden sich direkt per E‑Mail.</p>
+        <div class="mt-6 flex gap-3">
+          <a href="/kategorien/" class="inline-flex items-center px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded transition">Jetzt starten</a>
+          <a href="/anfragekorb/" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded transition">Anfragekorb</a>
+        </div>
+        <div class="mt-8 grid grid-cols-3 gap-4 text-sm">
+          <div class="p-4 rounded border border-gray-100 shadow-sm">1. Kategorie wählen</div>
+          <div class="p-4 rounded border border-gray-100 shadow-sm">2. Produkt hinzufügen</div>
+          <div class="p-4 rounded border border-gray-100 shadow-sm">3. Anfrage absenden</div>
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-6 border border-gray-100">
+        <form id="lookup-form" class="grid grid-cols-1 gap-3">
+          <label class="text-sm font-medium">PLZ</label>
+          <input id="zip" required pattern="\\d{5}" class="border rounded px-3 py-2" placeholder="81675" />
+          <label class="text-sm font-medium">Radius (km)</label>
+          <input id="radius" type="number" min="1" max="200" value="25" class="border rounded px-3 py-2" />
+          <button class="mt-2 inline-flex items-center justify-center px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded transition" type="submit">Händler im Umkreis schätzen</button>
+          <p id="lookup-result" class="text-sm text-gray-600"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import { lookupDealers } from '/assets/js/api.js';
+    import { showToast } from '/assets/js/ui.js';
+    const form = document.getElementById('lookup-form');
+    const out = document.getElementById('lookup-result');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const zip = (document.getElementById('zip')).value;
+      const radius = (document.getElementById('radius')).value;
+      try {
+        const res = await lookupDealers(zip, radius);
+        out.textContent = `Geschätzte Händler: ${res.estimatedDealers}`;
+        showToast('Schätzung aktualisiert', 'success');
+      } catch (err) {
+        out.textContent = '';
+        showToast('Lookup fehlgeschlagen', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
+
