@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ring: 2px;
+}
+
+* { outline-offset: 2px; }
+
+
