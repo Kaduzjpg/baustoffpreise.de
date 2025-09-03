@@ -28,7 +28,7 @@ FROM (
   SELECT 'Beton & Estrich', 'beton-estrich' UNION ALL
   SELECT 'Dämmstoffe (Perimeter, Keller, Fassade)', 'daemmstoffe-perimeter-keller-fassade' UNION ALL
   SELECT 'Mörtel, Putze & Zemente', 'moertel-putze-zemente'
-) v JOIN categories p ON p.slug='rohbau';
+) v(name, slug) JOIN categories p ON p.slug='rohbau';
 
 -- Dach & Fassade → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -38,7 +38,7 @@ FROM (
   SELECT 'Dachabdichtung & Folien', 'dachabdichtung-folien' UNION ALL
   SELECT 'Fassadenverkleidung (Putz, Paneele)', 'fassadenverkleidung-putz-paneele' UNION ALL
   SELECT 'Dachrinnen & Entwässerung', 'dachrinnen-entwaesserung'
-) v JOIN categories p ON p.slug='dach-fassade';
+) v(name, slug) JOIN categories p ON p.slug='dach-fassade';
 
 -- Innenausbau → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -48,7 +48,7 @@ FROM (
   SELECT 'Dämmung Innenbereich', 'daemmung-innenbereich' UNION ALL
   SELECT 'Spachtel & Innenputze', 'spachtel-innenputze' UNION ALL
   SELECT 'Profile & Zubehör', 'profile-zubehoer'
-) v JOIN categories p ON p.slug='innenausbau';
+) v(name, slug) JOIN categories p ON p.slug='innenausbau';
 
 -- Bodenbeläge & Fliesen → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -58,7 +58,7 @@ FROM (
   SELECT 'Laminat & Vinyl', 'laminat-vinyl' UNION ALL
   SELECT 'Parkett', 'parkett' UNION ALL
   SELECT 'Verlegezubehör (Kleber, Fugenmasse)', 'verlegezubehoer'
-) v JOIN categories p ON p.slug='boden-fliessen';
+) v(name, slug) JOIN categories p ON p.slug='boden-fliessen';
 
 -- Garten & Landschaftsbau → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -68,7 +68,7 @@ FROM (
   SELECT 'Zäune & Sichtschutz', 'zaeune-sichtschutz' UNION ALL
   SELECT 'Gartenhäuser & Carports', 'gartenhaeuser-carports' UNION ALL
   SELECT 'Gabionen & Mauersteine', 'gabionen-mauersteine'
-) v JOIN categories p ON p.slug='garten-landschaft';
+) v(name, slug) JOIN categories p ON p.slug='garten-landschaft';
 
 -- Holz & Türen → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -78,7 +78,7 @@ FROM (
   SELECT 'Innentüren', 'innentueren' UNION ALL
   SELECT 'Haustüren', 'haustueren' UNION ALL
   SELECT 'Zargen & Beschläge', 'zargen-beschlaege'
-) v JOIN categories p ON p.slug='holz-tueren';
+) v(name, slug) JOIN categories p ON p.slug='holz-tueren';
 
 -- Fenster & Sonnenschutz → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -88,7 +88,7 @@ FROM (
   SELECT 'Holz- & Alufenster', 'holz-alu-fenster' UNION ALL
   SELECT 'Rollläden & Raffstores', 'rolllaeden-raffstores' UNION ALL
   SELECT 'Markisen & Insektenschutz', 'markisen-insektenschutz'
-) v JOIN categories p ON p.slug='fenster-sonnenschutz';
+) v(name, slug) JOIN categories p ON p.slug='fenster-sonnenschutz';
 
 -- Sanitär & Heizung → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -98,7 +98,7 @@ FROM (
   SELECT 'Armaturen', 'armaturen' UNION ALL
   SELECT 'Heizkörper & Fußbodenheizung', 'heizkoerper-fussbodenheizung' UNION ALL
   SELECT 'Installationsmaterial (Rohre, Fittings)', 'installationsmaterial'
-) v JOIN categories p ON p.slug='sanitaer-heizung';
+) v(name, slug) JOIN categories p ON p.slug='sanitaer-heizung';
 
 -- Werkzeuge & Baugeräte → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -108,7 +108,7 @@ FROM (
   SELECT 'Elektrowerkzeuge', 'elektrowerkzeuge' UNION ALL
   SELECT 'Maschinen & Baugeräte', 'maschinen-baugeraete' UNION ALL
   SELECT 'Arbeitsschutz (Helme, Handschuhe, Schutzbrillen)', 'arbeitsschutz'
-) v JOIN categories p ON p.slug='werkzeuge-baugeraete';
+) v(name, slug) JOIN categories p ON p.slug='werkzeuge-baugeraete';
 
 -- Tiefbau → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -118,7 +118,7 @@ FROM (
   SELECT 'Kanal- & Rohrsysteme', 'kanal-rohrsysteme' UNION ALL
   SELECT 'Straßenbauprodukte (Bordsteine, Rinnensteine)', 'strassenbauprodukte' UNION ALL
   SELECT 'Geotextilien & Trennvliese', 'geotextilien-trennvliese'
-) v JOIN categories p ON p.slug='tiefbau';
+) v(name, slug) JOIN categories p ON p.slug='tiefbau';
 
 -- Schüttgüter → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
@@ -128,7 +128,7 @@ FROM (
   SELECT 'Sand & Füllstoffe', 'sand-fuellstoffe' UNION ALL
   SELECT 'Schotter', 'schotter' UNION ALL
   SELECT 'Recyclingmaterial (RC-Material, Mineralgemisch)', 'recyclingmaterial'
-) v JOIN categories p ON p.slug='schuettgueter';
+) v(name, slug) JOIN categories p ON p.slug='schuettgueter';
 
 SET FOREIGN_KEY_CHECKS=1;
 
