@@ -17,8 +17,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container h-14 flex items-center gap-4">
+      <div className="container h-14 flex items-center gap-6">
         <Link href="/" className="font-semibold tracking-tight whitespace-nowrap">Anfrage-Shop</Link>
+        <nav className="hidden md:flex items-center gap-4 text-sm relative">
+          <CategoriesMega />
+          <Link href="/produkte" className="hover:underline">Produkte</Link>
+        </nav>
         {/* Suche */}
         <form
           onSubmit={(e) => {
@@ -38,8 +42,6 @@ export function Header() {
           />
         </form>
         <nav className="hidden md:flex items-center gap-4 text-sm ml-auto relative">
-          <CategoriesMega />
-          <Link href="/produkte" className="hover:underline">Produkte</Link>
           <Link href="/anfragekorb" className="relative inline-flex items-center gap-2">
             <span>Anfragekorb</span>
             {count > 0 && (
