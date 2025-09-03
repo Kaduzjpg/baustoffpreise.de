@@ -48,4 +48,31 @@ export type SubcategoryRow = {
   slug: string;
 };
 
+export type ProductVariantRow = {
+  id: number;
+  productId: number;
+  format: string | null;
+  variant: string | null;
+  unit: string | null;
+  sku: string | null;
+  imageUrl: string | null;
+};
+
+export type ProductSpecRow = {
+  id: number;
+  productId: number;
+  variantId: number | null;
+  format: string | null;
+  variant: string | null;
+  specKey: string;
+  specValue: string;
+};
+
+export type ProductDownloadRow = {
+  id: number;
+  productId: number;
+  title: string;
+  url: string;
+};
+
 

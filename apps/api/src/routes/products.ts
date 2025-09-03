@@ -34,7 +34,26 @@ router.get('/by-slug/:slug', async (req, res, next) => {
       [req.params.slug]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const product = rows[0];
+    // Optionale Zusatzdaten (falls Tabellen existieren)
+    try {
+      const [variants] = await pool.query(
+        'SELECT id, productId, format, variant, unit, sku, imageUrl FROM ProductVariant WHERE productId = ? ORDER BY id',
+        [product.id]
+      );
+      const [specs] = await pool.query(
+        'SELECT id, productId, variantId, format, variant, specKey, specValue FROM ProductSpec WHERE productId = ? ORDER BY id',
+        [product.id]
+      );
+      const [downloads] = await pool.query(
+        'SELECT id, productId, title, url FROM ProductDownload WHERE productId = ? ORDER BY id',
+        [product.id]
+      );
+      return res.json({ ...product, variants, specs, downloads });
+    } catch {
+      // Tabellen evtl. noch nicht vorhanden – nur Produkt zurückgeben
+      return res.json(product);
+    }
   } catch (err) {
     console.error('DB error on GET /api/products/by-slug/:slug:', err);
     return res.status(503).json({ error: 'db_unavailable' });
