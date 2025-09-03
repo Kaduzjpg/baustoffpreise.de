@@ -13,6 +13,7 @@ export function CategoriesMega() {
   const [open, setOpen] = useState(false);
   const [subs, setSubs] = useState<Record<string, Sub[]>>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const closeTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'no-store' })
@@ -33,8 +34,14 @@ export function CategoriesMega() {
 
   return (
     <div className="relative" ref={containerRef}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={() => {
+        if (closeTimeout.current) window.clearTimeout(closeTimeout.current);
+        setOpen(true);
+      }}
+      onMouseLeave={() => {
+        if (closeTimeout.current) window.clearTimeout(closeTimeout.current);
+        closeTimeout.current = window.setTimeout(() => setOpen(false), 600);
+      }}
     >
       <button type="button" className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-sm transition hover:bg-slate-50 hover:shadow-md">
         Kategorien
@@ -51,7 +58,7 @@ export function CategoriesMega() {
                 <ul className="space-y-1.5 text-sm">
                   {(subs[c.slug] || []).slice(0, 6).map(s => (
                     <li key={s.id}>
-                      <Link href={`/kategorien/${c.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
+                      <Link href={`/kategorien/${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
                     </li>
                   ))}
                 </ul>

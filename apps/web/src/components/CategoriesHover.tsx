@@ -35,7 +35,7 @@ export function CategoriesHover({ apiBase, categories }: Props) {
 
   function onLeave() {
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => setOpenSlug(null), 120);
+    timeoutRef.current = window.setTimeout(() => setOpenSlug(null), 600);
   }
 
   const items = useMemo(() => categories ?? [], [categories]);
@@ -53,7 +53,7 @@ export function CategoriesHover({ apiBase, categories }: Props) {
                 <ul className="space-y-1">
                   {subs.map((s) => (
                     <li key={s.id}>
-                      <Link href={`/kategorien/${c.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
+                      <Link href={`/kategorien/${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
                     </li>
                   ))}
                 </ul>
