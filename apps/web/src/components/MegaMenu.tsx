@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { env } from '../lib/env';
+import { CategoryPill } from './CategoryPill';
 
 type Category = { id: number; name: string; slug: string };
 type Sub = { id: number; categoryId: number; name: string; slug: string };
@@ -46,9 +47,7 @@ export function CategoriesMega() {
           <div className="grid grid-cols-4 gap-5">
             {cats.map((c) => (
               <div key={c.id} onMouseEnter={() => load(c.slug)}>
-                <div className="mb-2 font-medium">
-                  <Link href={`/kategorien/${c.slug}`} className="hover:underline">{c.name}</Link>
-                </div>
+                <div className="mb-2 font-medium"><Link href={`/kategorien/${c.slug}`} className="hover:underline">{c.name}</Link></div>
                 <ul className="space-y-1.5 text-sm">
                   {(subs[c.slug] || []).slice(0, 6).map(s => (
                     <li key={s.id}>

@@ -1,0 +1,22 @@
+import Link from 'next/link';
+
+type Props = {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+};
+
+export function CategoryPill({ href, children, className }: Props) {
+  return (
+    <Link
+      href={href}
+      className={
+        `inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm md:text-base shadow-sm transition hover:bg-slate-50 hover:shadow-md ${className || ''}`
+      }
+    >
+      {children}
+    </Link>
+  );
+}
+
+
