@@ -25,110 +25,110 @@ INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM ( 
   SELECT 'Mauersteine (Ziegel, Kalksandstein, Porenbeton)' AS name, 'mauersteine' AS slug UNION ALL
-  SELECT 'Beton & Estrich', 'beton-estrich' UNION ALL
-  SELECT 'Dämmstoffe (Perimeter, Keller, Fassade)', 'daemmstoffe-perimeter-keller-fassade' UNION ALL
-  SELECT 'Mörtel, Putze & Zemente', 'moertel-putze-zemente'
-) AS v(name, slug) JOIN categories p ON p.slug='rohbau';
+  SELECT 'Beton & Estrich' AS name, 'beton-estrich' AS slug UNION ALL
+  SELECT 'Dämmstoffe (Perimeter, Keller, Fassade)' AS name, 'daemmstoffe-perimeter-keller-fassade' AS slug UNION ALL
+  SELECT 'Mörtel, Putze & Zemente' AS name, 'moertel-putze-zemente' AS slug
+) AS v JOIN categories p ON p.slug='rohbau';
 
 -- Dach & Fassade → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Dachziegel & Dachsteine', 'dachziegel-dachsteine' UNION ALL
-  SELECT 'Dachabdichtung & Folien', 'dachabdichtung-folien' UNION ALL
-  SELECT 'Fassadenverkleidung (Putz, Paneele)', 'fassadenverkleidung-putz-paneele' UNION ALL
-  SELECT 'Dachrinnen & Entwässerung', 'dachrinnen-entwaesserung'
-) AS v(name, slug) JOIN categories p ON p.slug='dach-fassade';
+  SELECT 'Dachziegel & Dachsteine' AS name, 'dachziegel-dachsteine' AS slug UNION ALL
+  SELECT 'Dachabdichtung & Folien' AS name, 'dachabdichtung-folien' AS slug UNION ALL
+  SELECT 'Fassadenverkleidung (Putz, Paneele)' AS name, 'fassadenverkleidung-putz-paneele' AS slug UNION ALL
+  SELECT 'Dachrinnen & Entwässerung' AS name, 'dachrinnen-entwaesserung' AS slug
+) AS v JOIN categories p ON p.slug='dach-fassade';
 
 -- Innenausbau → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Trockenbauplatten (Gipskarton, OSB)', 'trockenbauplatten' UNION ALL
-  SELECT 'Dämmung Innenbereich', 'daemmung-innenbereich' UNION ALL
-  SELECT 'Spachtel & Innenputze', 'spachtel-innenputze' UNION ALL
-  SELECT 'Profile & Zubehör', 'profile-zubehoer'
-) AS v(name, slug) JOIN categories p ON p.slug='innenausbau';
+  SELECT 'Trockenbauplatten (Gipskarton, OSB)' AS name, 'trockenbauplatten' AS slug UNION ALL
+  SELECT 'Dämmung Innenbereich' AS name, 'daemmung-innenbereich' AS slug UNION ALL
+  SELECT 'Spachtel & Innenputze' AS name, 'spachtel-innenputze' AS slug UNION ALL
+  SELECT 'Profile & Zubehör' AS name, 'profile-zubehoer' AS slug
+) AS v JOIN categories p ON p.slug='innenausbau';
 
 -- Bodenbeläge & Fliesen → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Fliesen & Platten', 'fliesen-platten' UNION ALL
-  SELECT 'Laminat & Vinyl', 'laminat-vinyl' UNION ALL
-  SELECT 'Parkett', 'parkett' UNION ALL
-  SELECT 'Verlegezubehör (Kleber, Fugenmasse)', 'verlegezubehoer'
-) AS v(name, slug) JOIN categories p ON p.slug='boden-fliessen';
+  SELECT 'Fliesen & Platten' AS name, 'fliesen-platten' AS slug UNION ALL
+  SELECT 'Laminat & Vinyl' AS name, 'laminat-vinyl' AS slug UNION ALL
+  SELECT 'Parkett' AS name, 'parkett' AS slug UNION ALL
+  SELECT 'Verlegezubehör (Kleber, Fugenmasse)' AS name, 'verlegezubehoer' AS slug
+) AS v JOIN categories p ON p.slug='boden-fliessen';
 
 -- Garten & Landschaftsbau → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Pflastersteine & Terrassenplatten', 'pflaster-terrassenplatten' UNION ALL
-  SELECT 'Zäune & Sichtschutz', 'zaeune-sichtschutz' UNION ALL
-  SELECT 'Gartenhäuser & Carports', 'gartenhaeuser-carports' UNION ALL
-  SELECT 'Gabionen & Mauersteine', 'gabionen-mauersteine'
-) AS v(name, slug) JOIN categories p ON p.slug='garten-landschaft';
+  SELECT 'Pflastersteine & Terrassenplatten' AS name, 'pflaster-terrassenplatten' AS slug UNION ALL
+  SELECT 'Zäune & Sichtschutz' AS name, 'zaeune-sichtschutz' AS slug UNION ALL
+  SELECT 'Gartenhäuser & Carports' AS name, 'gartenhaeuser-carports' AS slug UNION ALL
+  SELECT 'Gabionen & Mauersteine' AS name, 'gabionen-mauersteine' AS slug
+) AS v JOIN categories p ON p.slug='garten-landschaft';
 
 -- Holz & Türen → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Konstruktionsholz & Platten', 'konstruktionsholz-platten' UNION ALL
-  SELECT 'Innentüren', 'innentueren' UNION ALL
-  SELECT 'Haustüren', 'haustueren' UNION ALL
-  SELECT 'Zargen & Beschläge', 'zargen-beschlaege'
-) AS v(name, slug) JOIN categories p ON p.slug='holz-tueren';
+  SELECT 'Konstruktionsholz & Platten' AS name, 'konstruktionsholz-platten' AS slug UNION ALL
+  SELECT 'Innentüren' AS name, 'innentueren' AS slug UNION ALL
+  SELECT 'Haustüren' AS name, 'haustueren' AS slug UNION ALL
+  SELECT 'Zargen & Beschläge' AS name, 'zargen-beschlaege' AS slug
+) AS v JOIN categories p ON p.slug='holz-tueren';
 
 -- Fenster & Sonnenschutz → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Kunststofffenster', 'kunststofffenster' UNION ALL
-  SELECT 'Holz- & Alufenster', 'holz-alu-fenster' UNION ALL
-  SELECT 'Rollläden & Raffstores', 'rolllaeden-raffstores' UNION ALL
-  SELECT 'Markisen & Insektenschutz', 'markisen-insektenschutz'
-) AS v(name, slug) JOIN categories p ON p.slug='fenster-sonnenschutz';
+  SELECT 'Kunststofffenster' AS name, 'kunststofffenster' AS slug UNION ALL
+  SELECT 'Holz- & Alufenster' AS name, 'holz-alu-fenster' AS slug UNION ALL
+  SELECT 'Rollläden & Raffstores' AS name, 'rolllaeden-raffstores' AS slug UNION ALL
+  SELECT 'Markisen & Insektenschutz' AS name, 'markisen-insektenschutz' AS slug
+) AS v JOIN categories p ON p.slug='fenster-sonnenschutz';
 
 -- Sanitär & Heizung → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Badkeramik (WC, Waschbecken, Duschen)', 'badkeramik' UNION ALL
-  SELECT 'Armaturen', 'armaturen' UNION ALL
-  SELECT 'Heizkörper & Fußbodenheizung', 'heizkoerper-fussbodenheizung' UNION ALL
-  SELECT 'Installationsmaterial (Rohre, Fittings)', 'installationsmaterial'
-) AS v(name, slug) JOIN categories p ON p.slug='sanitaer-heizung';
+  SELECT 'Badkeramik (WC, Waschbecken, Duschen)' AS name, 'badkeramik' AS slug UNION ALL
+  SELECT 'Armaturen' AS name, 'armaturen' AS slug UNION ALL
+  SELECT 'Heizkörper & Fußbodenheizung' AS name, 'heizkoerper-fussbodenheizung' AS slug UNION ALL
+  SELECT 'Installationsmaterial (Rohre, Fittings)' AS name, 'installationsmaterial' AS slug
+) AS v JOIN categories p ON p.slug='sanitaer-heizung';
 
 -- Werkzeuge & Baugeräte → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Handwerkzeuge', 'handwerkzeuge' UNION ALL
-  SELECT 'Elektrowerkzeuge', 'elektrowerkzeuge' UNION ALL
-  SELECT 'Maschinen & Baugeräte', 'maschinen-baugeraete' UNION ALL
-  SELECT 'Arbeitsschutz (Helme, Handschuhe, Schutzbrillen)', 'arbeitsschutz'
-) AS v(name, slug) JOIN categories p ON p.slug='werkzeuge-baugeraete';
+  SELECT 'Handwerkzeuge' AS name, 'handwerkzeuge' AS slug UNION ALL
+  SELECT 'Elektrowerkzeuge' AS name, 'elektrowerkzeuge' AS slug UNION ALL
+  SELECT 'Maschinen & Baugeräte' AS name, 'maschinen-baugeraete' AS slug UNION ALL
+  SELECT 'Arbeitsschutz (Helme, Handschuhe, Schutzbrillen)' AS name, 'arbeitsschutz' AS slug
+) AS v JOIN categories p ON p.slug='werkzeuge-baugeraete';
 
 -- Tiefbau → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Entwässerung (KG-Rohre, Schächte)', 'entwaesserung' UNION ALL
-  SELECT 'Kanal- & Rohrsysteme', 'kanal-rohrsysteme' UNION ALL
-  SELECT 'Straßenbauprodukte (Bordsteine, Rinnensteine)', 'strassenbauprodukte' UNION ALL
-  SELECT 'Geotextilien & Trennvliese', 'geotextilien-trennvliese'
-) AS v(name, slug) JOIN categories p ON p.slug='tiefbau';
+  SELECT 'Entwässerung (KG-Rohre, Schächte)' AS name, 'entwaesserung' AS slug UNION ALL
+  SELECT 'Kanal- & Rohrsysteme' AS name, 'kanal-rohrsysteme' AS slug UNION ALL
+  SELECT 'Straßenbauprodukte (Bordsteine, Rinnensteine)' AS name, 'strassenbauprodukte' AS slug UNION ALL
+  SELECT 'Geotextilien & Trennvliese' AS name, 'geotextilien-trennvliese' AS slug
+) AS v JOIN categories p ON p.slug='tiefbau';
 
 -- Schüttgüter → Kinder
 INSERT IGNORE INTO categories (name, slug, parent_id, level, full_slug)
 SELECT v.name, v.slug, p.id, 1, CONCAT(p.slug,'/',v.slug)
 FROM (
-  SELECT 'Kies & Splitt', 'kies-splitt' UNION ALL
-  SELECT 'Sand & Füllstoffe', 'sand-fuellstoffe' UNION ALL
-  SELECT 'Schotter', 'schotter' UNION ALL
-  SELECT 'Recyclingmaterial (RC-Material, Mineralgemisch)', 'recyclingmaterial'
-) AS v(name, slug) JOIN categories p ON p.slug='schuettgueter';
+  SELECT 'Kies & Splitt' AS name, 'kies-splitt' AS slug UNION ALL
+  SELECT 'Sand & Füllstoffe' AS name, 'sand-fuellstoffe' AS slug UNION ALL
+  SELECT 'Schotter' AS name, 'schotter' AS slug UNION ALL
+  SELECT 'Recyclingmaterial (RC-Material, Mineralgemisch)' AS name, 'recyclingmaterial' AS slug
+) AS v JOIN categories p ON p.slug='schuettgueter';
 
 SET FOREIGN_KEY_CHECKS=1;
 
