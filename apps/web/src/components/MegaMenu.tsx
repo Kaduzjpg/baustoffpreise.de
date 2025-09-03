@@ -68,12 +68,12 @@ export function CategoriesMega() {
         </svg>
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-30 mt-2 w-[980px] max-w-[95vw] rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl">
-          <div className="grid grid-cols-4 gap-5">
+        <div className="absolute left-0 top-full z-30 mt-2 w-[980px] max-w-[95vw] rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl">
+          <div className="grid grid-cols-4 gap-3">
             {cats.map((c) => (
               <div key={c.id}>
                 <div className="mb-2 font-medium"><Link href={`/kategorien/${c.slug}`} className="hover:underline">{c.name}</Link></div>
-                <ul className="space-y-1.5 text-sm">
+                <ul className="space-y-1 text-sm">
                   {(subs[c.slug] || []).slice(0, 6).map(s => (
                     <li key={s.id}>
                       <Link href={`/kategorien/${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
