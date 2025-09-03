@@ -3,6 +3,7 @@ import { Hero } from '../components/Hero';
 import { FloatingCartButton } from '../components/FloatingCartButton';
 import { Trust } from '../components/Trust';
 import { CategoryCard } from '../components/CategoryCard';
+import { ProductCard } from '../components/ProductCard';
 import { CategoriesHover } from '../components/CategoriesHover';
 import { env } from '../lib/env';
 
@@ -14,6 +15,7 @@ export default function HomePage() {
       </div>
       {/* Kategorien */}
       <CategoriesTeaser />
+      <PopularProducts />
       <Trust />
       <FloatingCartButton />
     </main>
@@ -35,6 +37,32 @@ async function CategoriesTeaser() {
   } catch {
     return null;
   }
+}
+
+type Product = { id: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null };
+
+async function PopularProducts() {
+  let products: Product[] = [];
+  try {
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'no-store' });
+    products = ((await res.json()) as Product[]).slice(0, 6);
+  } catch {}
+
+  if (!products.length) return null;
+
+  return (
+    <section className="container space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Beliebte Baustoffe</h2>
+        <Link href="/produkte" className="text-sm underline">Alle Produkte anzeigen</Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((p) => (
+          <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} categoryId={(p as any).categoryId} />
+        ))}
+      </div>
+    </section>
+  );
 }
 
 
