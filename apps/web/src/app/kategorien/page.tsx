@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { env } from '../../lib/env';
+import { CategoryPill } from '../../components/CategoryPill';
 type Category = { id: number; name: string; slug: string };
 
 export default async function CategoriesPage() {
@@ -29,9 +30,7 @@ export default async function CategoriesPage() {
       <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {top.map((c) => (
           <li key={c.id}>
-            <Link href={`/kategorien/${c.slug}`} className="inline-flex w-full items-center justify-center rounded-full border px-4 py-2 text-sm hover:bg-slate-50">
-              {c.name}
-            </Link>
+            <CategoryPill href={`/kategorien/${c.slug}`}>{c.name}</CategoryPill>
           </li>
         ))}
       </ul>
