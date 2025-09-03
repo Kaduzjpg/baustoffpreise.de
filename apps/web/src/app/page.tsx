@@ -56,7 +56,7 @@ async function PopularProducts() {
         <h2 className="text-xl font-semibold">Beliebte Baustoffe</h2>
         <Link href="/produkte" className="text-sm underline">Alle Produkte anzeigen</Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {products.map((p) => (
           <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} categoryId={(p as any).categoryId} />
         ))}

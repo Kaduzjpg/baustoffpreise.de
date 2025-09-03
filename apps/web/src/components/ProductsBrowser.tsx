@@ -47,7 +47,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
           {(Array.isArray(categories) ? categories : []).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
         </select>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {sliced.map(p => (
           <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} />
         ))}
