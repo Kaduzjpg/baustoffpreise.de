@@ -22,15 +22,33 @@ export function CategoriesMega() {
       .catch(() => {});
   }, []);
 
-  async function load(subSlug: string) {
-    if (subs[subSlug]) return;
-    try {
-      const r = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/subcategories/${subSlug}`, { cache: 'no-store' });
-      if (!r.ok) return;
-      const j = await r.json();
-      setSubs(prev => ({ ...prev, [subSlug]: Array.isArray(j) ? j : [] }));
-    } catch {}
-  }
+  // Lade alle Unterkategorien vor, sobald Kategorien da sind
+  useEffect(() => {
+    if (!cats.length) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const entries = await Promise.all(
+          cats.map(async (c) => {
+            try {
+              const r = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/subcategories/${c.slug}`, { cache: 'no-store' });
+              if (!r.ok) return [c.slug, [] as Sub[]] as const;
+              const j = await r.json();
+              return [c.slug, (Array.isArray(j) ? j : []) as Sub[]] as const;
+            } catch {
+              return [c.slug, [] as Sub[]] as const;
+            }
+          })
+        );
+        if (!cancelled) {
+          const map: Record<string, Sub[]> = {};
+          for (const [slug, list] of entries) map[slug] = list;
+          setSubs(map);
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [cats]);
 
   return (
     <div className="relative" ref={containerRef}
@@ -53,7 +71,7 @@ export function CategoriesMega() {
         <div className="absolute right-0 top-full z-30 mt-2 w-[980px] max-w-[95vw] rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl">
           <div className="grid grid-cols-4 gap-5">
             {cats.map((c) => (
-              <div key={c.id} onMouseEnter={() => load(c.slug)}>
+              <div key={c.id}>
                 <div className="mb-2 font-medium"><Link href={`/kategorien/${c.slug}`} className="hover:underline">{c.name}</Link></div>
                 <ul className="space-y-1.5 text-sm">
                   {(subs[c.slug] || []).slice(0, 6).map(s => (
