@@ -28,7 +28,6 @@ export type CategoryRow = {
   id: number;
   name: string;
   slug: string;
-  description: string | null;
 };
 
 export type ProductRow = {
@@ -40,6 +39,13 @@ export type ProductRow = {
   imageUrl: string | null;
   description: string | null;
   keywords: string | null;
+};
+
+export type SubcategoryRow = {
+  id: number;
+  categoryId: number;
+  name: string;
+  slug: string;
 };
 
 

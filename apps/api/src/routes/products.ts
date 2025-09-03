@@ -1,15 +1,16 @@
 import { Router } from 'express';
-import { pool, ProductRow, CategoryRow } from '../db';
+import { pool, ProductRow, CategoryRow, SubcategoryRow } from '../db';
 
 const router = Router();
 
 router.get('/categories', async (_req, res, next) => {
   try {
     const [rows] = await pool.query<CategoryRow[]>(
-      'SELECT id, name, slug, description FROM `Category` ORDER BY name'
+      'SELECT id, name, slug FROM `categories` ORDER BY name'
     );
     res.json(rows);
   } catch (err) {
+    console.error('DB error on GET /api/products/categories:', err);
     return res.status(503).json({ error: 'db_unavailable' });
   }
 });
@@ -21,6 +22,7 @@ router.get('/list', async (_req, res, next) => {
     );
     res.json(rows);
   } catch (err) {
+    console.error('DB error on GET /api/products/list:', err);
     return res.status(503).json({ error: 'db_unavailable' });
   }
 });
@@ -34,6 +36,7 @@ router.get('/by-slug/:slug', async (req, res, next) => {
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
+    console.error('DB error on GET /api/products/by-slug/:slug:', err);
     return res.status(503).json({ error: 'db_unavailable' });
   }
 });
@@ -41,12 +44,13 @@ router.get('/by-slug/:slug', async (req, res, next) => {
 router.get('/category/by-slug/:slug', async (req, res, next) => {
   try {
     const [rows] = await pool.query<CategoryRow[]>(
-      'SELECT id, name, slug, description FROM `Category` WHERE slug = ? LIMIT 1',
+      'SELECT id, name, slug FROM `categories` WHERE slug = ? LIMIT 1',
       [req.params.slug]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
+    console.error('DB error on GET /api/products/category/by-slug/:slug:', err);
     return res.status(503).json({ error: 'db_unavailable' });
   }
 });
@@ -56,15 +60,33 @@ router.get('/by-category/:slug', async (req, res, next) => {
     const [rows] = await pool.query<ProductRow[]>(
       `SELECT p.id, p.categoryId, p.name, p.slug, p.unit, p.imageUrl, p.description, p.keywords
        FROM \`Product\` p
-       JOIN \`Category\` c ON c.id = p.categoryId
+       JOIN \`categories\` c ON c.id = p.categoryId
        WHERE c.slug = ?
        ORDER BY p.name`,
       [req.params.slug]
     );
     res.json(rows);
   } catch (err) {
-    res.status(503).json({ error: 'db_unavailable' });
-    next(err);
+    console.error('DB error on GET /api/products/by-category/:slug:', err);
+    return res.status(503).json({ error: 'db_unavailable' });
+  }
+});
+
+// Subcategories by category slug
+router.get('/subcategories/:slug', async (req, res) => {
+  try {
+    const [rows] = await pool.query<SubcategoryRow[]>(
+      `SELECT s.id, s.categoryId, s.name, s.slug
+       FROM Subcategory s
+       JOIN categories c ON c.id = s.categoryId
+       WHERE c.slug = ?
+       ORDER BY s.name`,
+      [req.params.slug]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('DB error on GET /api/products/subcategories/:slug:', err);
+    return res.status(503).json({ error: 'db_unavailable' });
   }
 });
 

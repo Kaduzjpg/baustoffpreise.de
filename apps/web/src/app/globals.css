@@ -8,4 +8,16 @@
 
 * { outline-offset: 2px; }
 
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded px-5 py-2.5 text-sm transition-transform ease-smooth;
+  }
+  .btn-primary {
+    @apply btn bg-anthracite text-white hover:scale-[1.02] hover:shadow-soft;
+  }
+  .btn-outline {
+    @apply btn border border-anthracite text-anthracite hover:bg-white/60;
+  }
+}
+
 

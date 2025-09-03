@@ -95,6 +95,11 @@ export default function SubmitInquiryPage() {
 
   return (
     <main className="container py-8 space-y-6">
+      <ol className="flex items-center gap-4 text-sm" aria-label="Checkout Fortschritt">
+        <li className="inline-flex items-center gap-2"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-anthracite text-white text-xs">1</span> Produkte prüfen</li>
+        <li className="inline-flex items-center gap-2 opacity-70"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-anthracite text-white text-xs">2</span> Kontaktdaten</li>
+        <li className="inline-flex items-center gap-2 opacity-70"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-anthracite text-white text-xs">3</span> Anfrage absenden</li>
+      </ol>
       <div className="text-sm text-slate-600"><Link href="/anfragekorb">Zurück zum Anfragekorb</Link></div>
       <h1 className="text-2xl font-semibold">Anfrage absenden</h1>
 
@@ -137,7 +142,8 @@ export default function SubmitInquiryPage() {
 
         {error && <div className="text-sm text-red-600" role="alert">{error}</div>}
 
-        <button disabled={loading} className="inline-flex items-center px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60 focus-visible:outline focus-visible:outline-2">
+        <button disabled={loading} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60 focus-visible:outline focus-visible:outline-2">
+          {loading && <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
           {loading ? 'Wird gesendet…' : 'Anfrage absenden'}
         </button>
       </form>

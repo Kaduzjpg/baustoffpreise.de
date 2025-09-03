@@ -28,6 +28,11 @@ export function loadCart(): CartState {
 export function saveCart(state: CartState) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // Notify listeners (e.g., header badge)
+  try {
+    const event = new CustomEvent('cart:updated', { detail: { count: state.items.length } });
+    window.dispatchEvent(event);
+  } catch {}
 }
 
 export function addItem(state: CartState, item: CartItem): CartState {
@@ -55,6 +60,10 @@ export function removeItem(state: CartState, productId: number): CartState {
 
 export function clearCart(): CartState {
   return { items: [] };
+}
+
+export function getCartCount(state: CartState): number {
+  return state.items.length;
 }
 
 

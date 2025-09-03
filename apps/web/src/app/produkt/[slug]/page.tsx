@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { env } from '../../../lib/env';
 import { addItem, loadCart, saveCart } from '../../../lib/cart';
 import Link from 'next/link';
+import { Breadcrumbs } from '../../../components/Breadcrumbs';
 
 type Product = { id: number; name: string; slug: string; unit?: string | null; description?: string | null };
 
@@ -29,18 +30,14 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       quantity: qty
     });
     saveCart(next);
-    alert('Zum Anfragekorb hinzugefügt');
+    try {
+      window.dispatchEvent(new CustomEvent('toast', { detail: { title: 'Zum Anfragekorb hinzugefügt', variant: 'success' } }));
+    } catch {}
   }
 
   return (
     <main className="container py-8 space-y-6">
-      <div className="text-sm text-slate-600 flex items-center gap-2">
-        <Link href="/">Start</Link>
-        <span>/</span>
-        <Link href="/kategorien">Kategorien</Link>
-        <span>/</span>
-        <span className="text-slate-900 font-medium">{product.slug}</span>
-      </div>
+      <Breadcrumbs items={[{ href: '/', label: 'Start' }, { href: '/kategorien', label: 'Kategorien' }, { label: product.slug }]} />
       <h1 className="text-2xl font-semibold">{product.name}</h1>
       <p className="text-slate-700">{product.description}</p>
       <div className="flex items-center gap-3">

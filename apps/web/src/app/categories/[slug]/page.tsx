@@ -1,31 +1,18 @@
-import Link from 'next/link';
 import { env } from '../../../lib/env';
 import { Breadcrumbs } from '../../../components/Breadcrumbs';
 import { ProductCard } from '../../../components/ProductCard';
 
-type Product = { id: number; categoryId: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null; description?: string | null };
+type Product = { id: number; categoryId: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null };
 
 export default async function CategoryDetailPage({ params }: { params: { slug: string } }) {
-  let products: Product[] = [];
-  let subs: { id: number; name: string; slug: string }[] = [];
-  try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/by-category/${params.slug}`, { cache: 'no-store' });
-    if (res.ok) {
-      const j = await res.json();
-      products = Array.isArray(j) ? j : [];
-    }
-  } catch {}
-  try {
-    const sres = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/subcategories/${params.slug}`, { cache: 'no-store' });
-    if (sres.ok) {
-      const sj = await sres.json();
-      subs = Array.isArray(sj) ? sj : [];
-    }
-  } catch {}
+  const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/by-category/${params.slug}`, { cache: 'no-store' });
+  const products = (await res.json()) as Product[];
+  const subRes = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/subcategories/${params.slug}`, { cache: 'no-store' });
+  const subs = (await subRes.json()) as { id: number; name: string; slug: string }[];
 
   return (
     <main className="container py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Start' }, { href: '/kategorien', label: 'Kategorien' }, { label: params.slug }]} />
+      <Breadcrumbs items={[{ href: '/', label: 'Start' }, { href: '/categories', label: 'Kategorien' }, { label: params.slug }]} />
       <h1 className="text-2xl font-semibold mb-6">Produkte</h1>
       {subs?.length > 0 && (
         <div className="mb-6">
@@ -38,12 +25,13 @@ export default async function CategoryDetailPage({ params }: { params: { slug: s
         </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {(Array.isArray(products) ? products : []).map((p) => (
+        {products.map((p) => (
           <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} categoryId={p.categoryId} categorySlug={params.slug} />
         ))}
       </div>
     </main>
   );
 }
+
 
 
