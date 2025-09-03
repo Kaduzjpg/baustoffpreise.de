@@ -49,7 +49,15 @@ router.get('/by-slug/:slug', async (req, res, next) => {
         'SELECT id, productId, title, url FROM ProductDownload WHERE productId = ? ORDER BY id',
         [product.id]
       );
-      return res.json({ ...product, variants, specs, downloads });
+      const [bundles] = await pool.query(
+        `SELECT b.relatedProductId AS id, p.name, p.slug
+         FROM ProductBundle b
+         JOIN Product p ON p.id = b.relatedProductId
+         WHERE b.productId = ?
+         ORDER BY b.sort, p.name`,
+        [product.id]
+      );
+      return res.json({ ...product, variants, specs, downloads, bundles });
     } catch {
       // Tabellen evtl. noch nicht vorhanden – nur Produkt zurückgeben
       return res.json(product);
