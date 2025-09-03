@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Hero } from '../components/Hero';
 import { FloatingCartButton } from '../components/FloatingCartButton';
 import { Trust } from '../components/Trust';
-import { ProductCard } from '../components/ProductCard';
 import { CategoryCard } from '../components/CategoryCard';
 import { CategoriesHover } from '../components/CategoriesHover';
 import { env } from '../lib/env';
@@ -13,38 +12,11 @@ export default function HomePage() {
       <div className="container pt-12">
         <Hero />
       </div>
-      {/* Kategorien (klein, ohne Bild) über beliebten Produkten */}
+      {/* Kategorien */}
       <CategoriesTeaser />
-      <PopularProducts />
       <Trust />
       <FloatingCartButton />
     </main>
-  );
-}
-
-type Product = { id: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null };
-
-async function PopularProducts() {
-  let products: Product[] = [];
-  try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'no-store' });
-    products = ((await res.json()) as Product[]).slice(0, 6);
-  } catch {}
-
-  if (!products.length) return null;
-
-  return (
-    <section className="container space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Beliebte Baustoffe</h2>
-        <Link href="/produkte" className="text-sm underline">Alle Produkte anzeigen</Link>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((p) => (
-          <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} categoryId={(p as any).categoryId} />
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -56,12 +28,8 @@ async function CategoriesTeaser() {
     const top = cats; // alle Hauptkategorien
     return (
       <section className="container space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Beliebte Kategorien</h2>
-          <Link href="/produkte" className="text-sm underline">Alle Produkte anzeigen</Link>
-        </div>
-        <p className="text-sm text-slate-600">Fahre mit der Maus über eine Kategorie, um Unterkategorien zu sehen.</p>
-        <CategoriesHover apiBase={env.NEXT_PUBLIC_API_BASE} categories={top} />
+        <h2 className="text-xl font-semibold">Kategorien</h2>
+        <CategoriesHover apiBase={env.NEXT_PUBLIC_API_BASE} categories={top} pillClassName="w-64" />
       </section>
     );
   } catch {

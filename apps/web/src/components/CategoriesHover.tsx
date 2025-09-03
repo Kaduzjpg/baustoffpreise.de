@@ -10,9 +10,10 @@ type Subcategory = { id: number; categoryId: number; name: string; slug: string 
 type Props = {
   apiBase: string;
   categories: SimpleCategory[];
+  pillClassName?: string;
 };
 
-export function CategoriesHover({ apiBase, categories }: Props) {
+export function CategoriesHover({ apiBase, categories, pillClassName }: Props) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [cache, setCache] = useState<Record<string, Subcategory[]>>({});
   const timeoutRef = useRef<number | null>(null);
@@ -47,7 +48,7 @@ export function CategoriesHover({ apiBase, categories }: Props) {
         const subs = cache[c.slug] || [];
         return (
           <li key={c.id} className="relative" onMouseEnter={() => onEnter(c.slug)} onMouseLeave={onLeave}>
-            <CategoryPill href={`/kategorien/${c.slug}`}>{c.name}</CategoryPill>
+            <CategoryPill href={`/kategorien/${c.slug}`} className={pillClassName}>{c.name}</CategoryPill>
             {isOpen && subs.length > 0 && (
               <div className="absolute left-0 z-20 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
                 <ul className="space-y-1">
