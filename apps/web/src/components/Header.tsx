@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MobileNav } from './MobileNav';
+import { CategoriesMega } from './MegaMenu';
 
 export function Header() {
   const [count, setCount] = useState(0);
@@ -36,7 +37,8 @@ export function Header() {
             suppressHydrationWarning
           />
         </form>
-        <nav className="hidden md:flex items-center gap-4 text-sm ml-auto">
+        <nav className="hidden md:flex items-center gap-4 text-sm ml-auto relative">
+          <CategoriesMega />
           <Link href="/produkte" className="hover:underline">Produkte</Link>
           <Link href="/anfragekorb" className="relative inline-flex items-center gap-2">
             <span>Anfragekorb</span>
