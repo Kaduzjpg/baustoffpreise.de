@@ -25,7 +25,7 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
   }
 
   return (
-    <div className="group rounded-3xl border bg-white shadow-soft overflow-hidden transition-transform ease-smooth hover:scale-[1.01] hover:shadow-lg">
+    <a href={`/produkte/${slug}`} className="group block rounded-3xl border bg-white shadow-soft overflow-hidden transition-transform ease-smooth hover:scale-[1.01] hover:shadow-lg">
       <div className="aspect-[3/2] bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'})` }} />
       <div className="p-2.5 space-y-1">
         <div className="text-sm font-medium leading-tight">{name}</div>
@@ -42,7 +42,7 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
           </button>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
