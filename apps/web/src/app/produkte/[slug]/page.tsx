@@ -158,7 +158,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/by-slug/${params.slug}`, { cache: 'force-cache', next: { revalidate: 1800 } });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/products/by-slug/${params.slug}`, { cache: 'force-cache', next: { revalidate: 1800 } });
   const product = res.ok ? await res.json() : null;
   const title = product?.name ? `${product.name} | Anfrage-Shop` : 'Produkt | Anfrage-Shop';
   const description = product?.description || 'Baustoffe anfragen und Angebote vergleichen.';

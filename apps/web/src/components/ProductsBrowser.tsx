@@ -55,7 +55,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
       radius,
       zip
     });
-    fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/search?${sp.toString()}`, { signal: controller.signal, cache: 'no-store' })
+    fetch(`/api/proxy/api/products/search?${sp.toString()}`, { signal: controller.signal, cache: 'no-store' })
       .then(r => r.json())
       .then(j => setServer(j))
       .catch(() => setServer(null))
