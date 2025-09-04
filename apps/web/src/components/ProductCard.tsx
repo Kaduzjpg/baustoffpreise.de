@@ -20,6 +20,7 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
   const [variants, setVariants] = useState<Array<{ format?: string | null; variant?: string | null; unit?: string | null }>>([]);
   const [format, setFormat] = useState<string | undefined>();
   const [variantName, setVariantName] = useState<string | undefined>();
+  const [qty, setQty] = useState<number>(1);
 
   useEffect(() => {
     let ignore = false;
@@ -43,7 +44,7 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
   }, [variantsForFormat, variantName, unit]);
   function addToCart() {
     const cart = loadCart();
-    const next = addItem(cart, { productId: id, name, slug, unit: effectiveUnit ?? undefined, quantity: 1, format, variant: variantName });
+    const next = addItem(cart, { productId: id, name, slug, unit: effectiveUnit ?? undefined, quantity: Math.max(1, qty), format, variant: variantName });
     saveCart(next);
     try {
       window.dispatchEvent(new CustomEvent('toast', { detail: { title: `${name} zum Anfragekorb hinzugefügt`, variant: 'success' } }));
@@ -78,6 +79,16 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
             </div>
           </div>
         )}
+        {/* Menge */}
+        <div className="pt-1 flex items-center gap-2">
+          <span className="text-xs text-slate-600">Menge</span>
+          <div className="inline-flex items-center rounded-full border">
+            <button onClick={(e) => { e.preventDefault(); setQty((q) => Math.max(1, q - 1)); }} className="px-2 py-1 text-sm" aria-label="Verringern">−</button>
+            <input value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))} type="number" min={1} className="w-14 text-center outline-none" title="Menge" placeholder="1" />
+            <button onClick={(e) => { e.preventDefault(); setQty((q) => q + 1); }} className="px-2 py-1 text-sm" aria-label="Erhöhen">+</button>
+          </div>
+          <span className="text-xs text-slate-600">{effectiveUnit}</span>
+        </div>
         <div className="pt-1.5">
           <button
             onClick={addToCart}
