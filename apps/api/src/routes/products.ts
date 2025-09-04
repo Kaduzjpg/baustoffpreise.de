@@ -38,6 +38,8 @@ router.get('/search', async (req, res) => {
     const brand = String(req.query.brand || '').trim();
     const stock = String(req.query.stock || '').trim();
     const q = String(req.query.q || '').trim();
+    const zip = String(req.query.zip || '').trim();
+    const radiusKm = parseInt(String(req.query.radius || ''), 10);
 
     const where: string[] = [];
     const params: any[] = [];
@@ -48,13 +50,31 @@ router.get('/search', async (req, res) => {
     if (stock) { where.push('stockType = ?'); params.push(stock); }
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
+    // Optional: Dealer-Lookup nach PLZ/Radius. Wenn keine Händler erreichbar, liefern wir 0 Ergebnisse zurück
+    let dealersFound: number | undefined = undefined;
+    if (/^\d{5}$/.test(zip) && !isNaN(radiusKm)) {
+      const [rows]: any = await pool.query(
+        'SELECT zip, city, radiusKm, lat, lng FROM Dealer'
+      );
+      let count = 0;
+      for (const d of rows || []) {
+        const dealerRadius = typeof d.radiusKm === 'number' ? d.radiusKm : radiusKm;
+        // Sehr einfache Heuristik: gleiche Vorwahl-PLZ (erste 2 Ziffern)
+        if ((d.zip || '').slice(0, 2) === zip.slice(0, 2)) count++;
+      }
+      dealersFound = count;
+      if (count === 0) {
+        return res.json({ items: [], total: 0, page, pageSize, dealersFound: 0 });
+      }
+    }
+
     const [[{ cnt }]]: any = await pool.query(`SELECT COUNT(*) AS cnt FROM Product ${whereSql}`, params);
     const offset = (page - 1) * pageSize;
     const [rows] = await pool.query<any[]>(
       `SELECT id, categoryId, name, slug, unit, imageUrl, description FROM Product ${whereSql} ORDER BY name LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
     );
-    res.json({ items: rows, total: cnt, page, pageSize });
+    res.json({ items: rows, total: cnt, page, pageSize, dealersFound });
   } catch (err) {
     console.error('DB error on GET /api/products/search:', err);
     return res.status(503).json({ error: 'db_unavailable' });

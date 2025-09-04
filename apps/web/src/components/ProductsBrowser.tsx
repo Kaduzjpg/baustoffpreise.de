@@ -14,6 +14,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
   const [brand, setBrand] = useState('');
   const [stock, setStock] = useState(''); // lager/bestell
   const [radius, setRadius] = useState('');
+  const [zip, setZip] = useState('');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [server, setServer] = useState<{ items: Product[]; total: number; page: number; pageSize: number } | null>(null);
@@ -50,7 +51,9 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
       unit,
       categoryId: cat,
       brand,
-      stock
+      stock,
+      radius,
+      zip
     });
     fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/search?${sp.toString()}`, { signal: controller.signal, cache: 'no-store' })
       .then(r => r.json())
@@ -95,7 +98,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
         <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Suche" className="border rounded px-3 py-2" aria-label="Suche" />
         <select value={unit} onChange={(e) => { setUnit(e.target.value); setPage(1); }} className="border rounded px-3 py-2" aria-label="Einheit filtern">
           <option value="">Alle Einheiten</option>
@@ -115,6 +118,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
           <option value="">Liefergebiet</option>
           {[10,20,30,50,75,100].map(r => <option key={r} value={String(r)}>{r} km</option>)}
         </select>
+        <input value={zip} onChange={(e) => { setZip(e.target.value); setPage(1); }} placeholder="PLZ" className="border rounded px-3 py-2" aria-label="PLZ" pattern="\d{5}" />
       </div>
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" aria-busy>
@@ -161,7 +165,12 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
         </div>
       )}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-600">{(current - 1) * pageSize + 1}-{Math.min(current * pageSize, total)} von {total}</div>
+        <div className="text-sm text-slate-600">
+          {(current - 1) * pageSize + 1}-{Math.min(current * pageSize, total)} von {total}
+          {typeof (server as any)?.dealersFound === 'number' && (
+            <span className="ml-3 text-xs">Händler im Radius: {(server as any)?.dealersFound}</span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <button className="btn-outline" onClick={() => go(current - 1)} disabled={current <= 1}>Zurück</button>
           <button className="btn-primary" onClick={() => go(current + 1)} disabled={current >= totalPages}>Weiter</button>
