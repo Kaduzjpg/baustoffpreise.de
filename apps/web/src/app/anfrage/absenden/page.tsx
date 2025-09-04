@@ -158,12 +158,12 @@ export default function SubmitInquiryPage() {
             <Link href="/produkte" className="underline">Jetzt Produkte ansehen</Link>
           </div>
         ) : (
-          <div className="space-y-4 max-w-5xl">
-            <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="space-y-4 max-w-6xl">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {cart.items.map((i) => (
-                <li key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="rounded-2xl border bg-white p-5 shadow-soft flex flex-col gap-4">
+                <li key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="rounded-2xl border bg-white p-4 shadow-soft flex flex-col gap-3">
                   {/* Bild-Platzhalter */}
-                  <div className="h-40 md:h-48 w-full rounded-xl bg-slate-100 overflow-hidden" aria-hidden>
+                  <div className="h-32 md:h-36 w-full rounded-xl bg-slate-100 overflow-hidden" aria-hidden>
                     <div className="h-full w-full bg-cover bg-center" />
                   </div>
 
