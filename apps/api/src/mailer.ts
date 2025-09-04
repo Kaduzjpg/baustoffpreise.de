@@ -16,13 +16,15 @@ export async function sendMail(options: {
   subject: string;
   html: string;
   replyTo?: string;
+  attachments?: { filename: string; content: Buffer; contentType?: string }[];
 }) {
   const info = await transporter.sendMail({
     from: env.FROM_EMAIL,
     to: options.to,
     subject: options.subject,
     html: options.html,
-    replyTo: options.replyTo
+    replyTo: options.replyTo,
+    attachments: options.attachments
   });
   return info.messageId;
 }

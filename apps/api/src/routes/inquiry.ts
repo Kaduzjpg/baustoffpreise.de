@@ -11,8 +11,16 @@ const inquirySchema = z.object({
   customerName: z.string().min(2).max(160),
   customerPhone: z.string().optional(),
   customerZip: z.string().regex(/^\d{5}$/),
+  customerStreet: z.string().min(3).max(160),
+  customerCity: z.string().min(2).max(120),
   radiusKm: z.number().int().min(10).max(200),
   message: z.string().max(2000).optional(),
+  attachments: z
+    .array(
+      z.object({ filename: z.string().max(180), content: z.string(), contentType: z.string().optional() })
+    )
+    .max(8)
+    .optional(),
   items: z
     .array(
       z.object({
@@ -38,12 +46,14 @@ router.post('/submit', async (req, res) => {
     await conn.beginTransaction();
 
     const [inquiryResult] = await conn.query<any>(
-      'INSERT INTO Inquiry (customerEmail, customerName, customerPhone, customerZip, radiusKm, message, lat, lng, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      'INSERT INTO Inquiry (customerEmail, customerName, customerPhone, customerZip, customerStreet, customerCity, radiusKm, message, lat, lng, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
       [
         data.customerEmail,
         data.customerName,
         data.customerPhone ?? null,
         data.customerZip,
+        data.customerStreet,
+        data.customerCity,
         data.radiusKm,
         data.message ?? null,
         data.lat ?? null,
@@ -89,15 +99,18 @@ router.post('/submit', async (req, res) => {
       <p><strong>Kunde:</strong> ${data.customerName} — ${data.customerEmail}${
         data.customerPhone ? ' — ' + data.customerPhone : ''
       }</p>
+      <p><strong>Adresse:</strong> ${data.customerStreet}, ${data.customerZip} ${data.customerCity}</p>
       <p><strong>Radius:</strong> ${data.radiusKm} km</p>
       ${data.message ? `<p><strong>Nachricht:</strong> ${data.message}</p>` : ''}
       <p><strong>Positionen:</strong></p>
       <ul>${itemsHtml}</ul>
     `;
 
+    const attachments = (data.attachments || []).map((a) => ({ filename: a.filename, content: Buffer.from(a.content, 'base64'), contentType: a.contentType }));
+
     await Promise.all(
       matched.map((d) =>
-        sendMail({ to: d.email, subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail })
+        sendMail({ to: d.email, subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail, attachments })
       )
     );
 

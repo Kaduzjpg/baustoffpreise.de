@@ -13,10 +13,13 @@ export default function SubmitInquiryPage() {
     customerName: '',
     customerPhone: '',
     customerZip: '',
+    customerStreet: '',
+    customerCity: '',
     radiusKm: 50,
     message: '',
     consent: false
   });
+  const [files, setFiles] = useState<File[]>([]);
   const [lookupCount, setLookupCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +71,10 @@ export default function SubmitInquiryPage() {
       setError('Bitte stimmen Sie den Bedingungen zu.');
       return;
     }
+    if (!form.customerStreet.trim() || !form.customerCity.trim()) {
+      setError('Bitte vollständige Adresse angeben (Straße/Hausnummer und Ort).');
+      return;
+    }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) {
       setError('Bitte eine gültige E-Mail angeben.');
       return;
@@ -83,6 +90,22 @@ export default function SubmitInquiryPage() {
 
     setLoading(true);
     try {
+      // Dateien in Base64 umwandeln
+      const attachments = await Promise.all(
+        (files || []).slice(0, 8).map(
+          (f) =>
+            new Promise<{ filename: string; content: string; contentType?: string }>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const result = String(reader.result || '');
+                const base64 = result.includes(',') ? result.split(',')[1] : result;
+                resolve({ filename: f.name, content: base64, contentType: f.type || undefined });
+              };
+              reader.onerror = () => reject(reader.error);
+              reader.readAsDataURL(f);
+            })
+        )
+      );
       const resp = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/inquiry/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,9 +114,12 @@ export default function SubmitInquiryPage() {
           customerName: form.customerName,
           customerPhone: form.customerPhone || undefined,
           customerZip: form.customerZip,
+          customerStreet: form.customerStreet,
+          customerCity: form.customerCity,
           radiusKm: form.radiusKm,
           message: form.message || undefined,
-          items: itemsForSubmit
+          items: itemsForSubmit,
+          attachments
         })
       });
       if (!resp.ok) throw new Error('Fehler beim Absenden');
@@ -184,6 +210,16 @@ export default function SubmitInquiryPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <label className="block text-sm mb-1">Straße & Nr.</label>
+              <input className="w-full border rounded px-3 py-2" value={form.customerStreet} onChange={(e) => setForm({ ...form, customerStreet: e.target.value })} required minLength={3} maxLength={160} title="Straße & Nr." placeholder="Musterstraße 1" />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Ort</label>
+              <input className="w-full border rounded px-3 py-2" value={form.customerCity} onChange={(e) => setForm({ ...form, customerCity: e.target.value })} required minLength={2} maxLength={120} title="Ort" placeholder="Musterstadt" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
               <label className="block text-sm mb-1">PLZ</label>
               <input className="w-full border rounded px-3 py-2" value={form.customerZip} onChange={(e) => setForm({ ...form, customerZip: e.target.value })} required pattern="\d{5}" title="PLZ" placeholder="12345" />
             </div>
@@ -198,6 +234,11 @@ export default function SubmitInquiryPage() {
           <div>
             <label className="block text-sm mb-1">Nachricht (optional)</label>
             <textarea className="w-full border rounded px-3 py-2" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={2000} title="Nachricht" placeholder="Ihre Nachricht an die Händler (optional)" />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Anhänge (max. 8 Dateien, je ≤ 5 MB)</label>
+            <input type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp" onChange={(e) => setFiles(Array.from(e.target.files || []).slice(0, 8))} title="Anhänge" />
+            {files.length > 0 && <div className="text-xs text-slate-600 mt-1">{files.length} Datei(en) ausgewählt</div>}
           </div>
           <label className="inline-flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} title="Zustimmung" />
