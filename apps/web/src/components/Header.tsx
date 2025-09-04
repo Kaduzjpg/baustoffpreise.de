@@ -46,7 +46,7 @@ export function Header() {
           />
         </form>
         <nav className="hidden md:flex items-center gap-4 text-sm ml-auto relative">
-          <Link href="/anfragekorb" className="relative inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition hover:bg-slate-50 hover:shadow-md">
+          <Link href="/anfrage/absenden" className="relative inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition hover:bg-slate-50 hover:shadow-md">
             <span>🛒</span>
             <span>Anfragekorb</span>
             {count > 0 && (

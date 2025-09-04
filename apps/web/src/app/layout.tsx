@@ -20,7 +20,7 @@ function Footer() {
           <div className="font-semibold mb-3">Quicklinks</div>
           <ul className="space-y-2 text-white/80">
             <li><Link href="/kategorien" className="hover:underline">Kategorien</Link></li>
-            <li><Link href="/anfragekorb" className="hover:underline">Anfragekorb</Link></li>
+            <li><Link href="/anfrage/absenden" className="hover:underline">Anfrage</Link></li>
             <li><Link href="#hilfe" className="hover:underline">Hilfe</Link></li>
           </ul>
         </div>
