@@ -2,7 +2,6 @@
 import { addItem, loadCart, saveCart } from '../lib/cart';
 import Image from 'next/image';
 import { loadFavorites, saveFavorites, toggleFavorite, isFavorite } from '../lib/favorites';
-import { useEffect } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '../lib/env';
 import { getToneByCategoryId, getToneBySlug } from '../lib/categoryColors';
