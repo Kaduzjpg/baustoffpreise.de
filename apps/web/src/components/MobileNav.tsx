@@ -33,7 +33,7 @@ export function MobileNav() {
             </div>
             <ul className="space-y-3 text-sm">
               <li><Link href="/produkte" onClick={() => setOpen(false)}>Produkte</Link></li>
-              <li><Link href="/anfragekorb" onClick={() => setOpen(false)}>Anfragekorb</Link></li>
+              <li><Link href="/anfrage/absenden" onClick={() => setOpen(false)}>Anfrage</Link></li>
               <li><Link href="#hilfe" onClick={() => setOpen(false)}>Hilfe</Link></li>
             </ul>
           </nav>
