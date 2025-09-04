@@ -4,7 +4,7 @@ import { FloatingCartButton } from '../components/FloatingCartButton';
 import { Trust } from '../components/Trust';
 import { CategoryCard } from '../components/CategoryCard';
 import { ProductCard } from '../components/ProductCard';
-import { CategoriesHover } from '../components/CategoriesHover';
+import { CategoryPill } from '../components/CategoryPill';
 import { env } from '../lib/env';
 
 export default function HomePage() {
@@ -14,7 +14,7 @@ export default function HomePage() {
         <Hero />
       </div>
       {/* Kategorien */}
-      <CategoriesTeaser />
+      <CategoriesSimpleGrid />
       <PopularProducts />
       <Trust />
       <FloatingCartButton />
@@ -22,16 +22,27 @@ export default function HomePage() {
   );
 }
 
-async function CategoriesTeaser() {
+async function CategoriesSimpleGrid() {
   try {
     const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'no-store' });
     const cats = await res.json();
     if (!Array.isArray(cats) || cats.length === 0) return null;
-    const top = cats; // alle Hauptkategorien
+    const top = cats;
     return (
       <section className="container space-y-6">
         <h2 className="text-xl font-semibold">Kategorien</h2>
-        <CategoriesHover apiBase={env.NEXT_PUBLIC_API_BASE} categories={top} pillClassName="w-64 px-6 md:px-8" />
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {top.map((c: any) => (
+            <li key={c.id} className="flex">
+              <CategoryPill href={`/kategorien/${c.slug}`} className="w-full justify-start px-6 md:px-8">
+                {c.name}
+              </CategoryPill>
+            </li>
+          ))}
+        </ul>
+        <div className="flex justify-end">
+          <Link href="/produkte" className="text-sm underline">Alle Produkte anzeigen</Link>
+        </div>
       </section>
     );
   } catch {
