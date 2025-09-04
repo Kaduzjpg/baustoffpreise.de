@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
+// Kein Link-Navigieren mehr beim Hinzufügen zum Anfragekorb
+import { addItem, loadCart, saveCart } from '../lib/cart';
 
 export type Variant = { id: number; productId: number; format?: string | null; variant?: string | null; unit?: string | null; sku?: string | null; imageUrl?: string | null };
 export type Spec = { id: number; productId: number; variantId?: number | null; format?: string | null; variant?: string | null; specKey: string; specValue: string };
 
 export function ProductDetailClient({
+  productId,
   name,
   slug,
   imageUrl,
@@ -15,6 +17,7 @@ export function ProductDetailClient({
   variants = [],
   specs = []
 }: {
+  productId: number;
   name: string;
   slug: string;
   imageUrl?: string | null;
@@ -43,6 +46,17 @@ export function ProductDetailClient({
   }, [specs, format, variantName]);
 
   const [qty, setQty] = useState<number>(1);
+
+  function handleAddToCart() {
+    try {
+      const cart = loadCart();
+      const next = addItem(cart, { productId, name, slug, unit: effectiveUnit, quantity: qty });
+      saveCart(next);
+      try {
+        window.dispatchEvent(new CustomEvent('toast', { detail: { title: `${name} zum Anfragekorb hinzugefügt`, variant: 'success' } }));
+      } catch {}
+    } catch {}
+  }
 
   return (
     <div className="space-y-4">
@@ -81,13 +95,13 @@ export function ProductDetailClient({
           </div>
         </div>
         <div className="pb-2 text-sm text-slate-700">{effectiveUnit}</div>
-        <Link href={`/anfragekorb?add=${slug}&qty=${qty}`} className="ml-auto btn-cta">🛒 In Anfragekorb</Link>
+        <button onClick={handleAddToCart} className="ml-auto btn-cta">🛒 In Anfragekorb</button>
       </div>
       {/* Sticky CTA mobil */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-white/90 backdrop-blur">
         <div className="container py-3 flex items-center gap-3">
           <div className="text-xs text-slate-600">Kostenlos & unverbindlich</div>
-          <Link href={`/anfragekorb?add=${slug}&qty=${qty}`} className="ml-auto btn-cta">🛒 In Anfragekorb</Link>
+          <button onClick={handleAddToCart} className="ml-auto btn-cta">🛒 In Anfragekorb</button>
         </div>
       </div>
 

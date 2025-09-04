@@ -45,6 +45,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         {/* Rechte Spalte: Info & CTA */}
         <div className="space-y-4">
           <ProductDetailClient
+            productId={product.id}
             name={product.name}
             slug={product.slug}
             imageUrl={product.imageUrl}
