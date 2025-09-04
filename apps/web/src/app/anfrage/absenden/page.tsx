@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '../../../lib/env';
-import { loadCart, clearCart, saveCart } from '../../../lib/cart';
+import { loadCart, clearCart, saveCart, updateItem, removeItem } from '../../../lib/cart';
 import Link from 'next/link';
 
 export default function SubmitInquiryPage() {
@@ -42,6 +42,24 @@ export default function SubmitInquiryPage() {
     () => cart.items.map((i) => ({ productId: i.productId, quantity: i.quantity, note: i.note })),
     [cart.items]
   );
+
+  function onQtyChange(productId: number, quantity: number, format?: string | null, variant?: string | null) {
+    const next = updateItem(cart, productId, { quantity: Math.max(1, quantity) }, format, variant);
+    setCart(next);
+    saveCart(next);
+  }
+
+  function onNoteChange(productId: number, note: string, format?: string | null, variant?: string | null) {
+    const next = updateItem(cart, productId, { note }, format, variant);
+    setCart(next);
+    saveCart(next);
+  }
+
+  function onRemove(productId: number, format?: string | null, variant?: string | null) {
+    const next = removeItem(cart, productId, format, variant);
+    setCart(next);
+    saveCart(next);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,36 +113,83 @@ export default function SubmitInquiryPage() {
 
   return (
     <main className="container py-8 space-y-6">
-      <ol className="flex items-center gap-4 text-sm" aria-label="Checkout Fortschritt">
-        <li className="inline-flex items-center gap-2"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-anthracite text-white text-xs">1</span> Produkte prüfen</li>
-        <li className="inline-flex items-center gap-2 opacity-70"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-anthracite text-white text-xs">2</span> Kontaktdaten</li>
-        <li className="inline-flex items-center gap-2 opacity-70"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-anthracite text-white text-xs">3</span> Anfrage absenden</li>
-      </ol>
-      <div className="text-sm text-slate-600"><Link href="/anfragekorb">Zurück zum Anfragekorb</Link></div>
-      <h1 className="text-2xl font-semibold">Anfrage absenden</h1>
+      <h1 className="text-2xl font-semibold">Anfrage</h1>
 
+      {/* Anfragekorb-Abschnitt */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Deine Produkte</h2>
+        {cart.items.length === 0 ? (
+          <div className="text-slate-700">
+            Dein Anfragekorb ist leer.{' '}
+            <Link href="/produkte" className="underline">Jetzt Produkte ansehen</Link>
+          </div>
+        ) : (
+          <div className="space-y-4 max-w-3xl">
+            {cart.items.map((i) => (
+              <div key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="border rounded p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{i.name}</div>
+                    <div className="text-sm text-slate-600">{i.unit}</div>
+                    {(i as any).format && <div className="text-xs text-slate-600">Format: {(i as any).format}</div>}
+                    {(i as any).variant && <div className="text-xs text-slate-600">Variante: {(i as any).variant}</div>}
+                  </div>
+                  <button onClick={() => onRemove(i.productId, (i as any).format || null, (i as any).variant || null)} className="text-sm text-red-600 hover:underline">Entfernen</button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm" htmlFor={`qty-${i.productId}`}>Menge</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={i.quantity}
+                    onChange={(e) => onQtyChange(i.productId, Number(e.target.value), (i as any).format || null, (i as any).variant || null)}
+                    id={`qty-${i.productId}`}
+                    className="w-24 border rounded px-2 py-1"
+                    title="Menge"
+                    placeholder="1"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm" htmlFor={`note-${i.productId}`}>Notiz</label>
+                  <input
+                    type="text"
+                    value={i.note || ''}
+                    onChange={(e) => onNoteChange(i.productId, e.target.value, (i as any).format || null, (i as any).variant || null)}
+                    id={`note-${i.productId}`}
+                    placeholder="Optionale Notiz (max. 255 Zeichen)"
+                    className="border rounded px-2 py-1"
+                    title="Notiz"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Kontaktformular */}
       <form onSubmit={onSubmit} className="space-y-4 max-w-xl">
         <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="block text-sm mb-1">Name</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} required minLength={2} maxLength={160} />
+            <input className="w-full border rounded px-3 py-2" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} required minLength={2} maxLength={160} title="Name" placeholder="Max Mustermann" />
           </div>
           <div>
             <label className="block text-sm mb-1">E-Mail</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerEmail} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} required type="email" />
+            <input className="w-full border rounded px-3 py-2" value={form.customerEmail} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} required type="email" title="E-Mail" placeholder="name@beispiel.de" />
           </div>
           <div>
             <label className="block text-sm mb-1">Telefon (optional)</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} />
+            <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} title="Telefon" placeholder="01234 567890" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm mb-1">PLZ</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerZip} onChange={(e) => setForm({ ...form, customerZip: e.target.value })} required pattern="\d{5}" />
+              <input className="w-full border rounded px-3 py-2" value={form.customerZip} onChange={(e) => setForm({ ...form, customerZip: e.target.value })} required pattern="\d{5}" title="PLZ" placeholder="12345" />
             </div>
             <div>
               <label className="block text-sm mb-1">Radius: {form.radiusKm} km</label>
-              <input type="range" min={10} max={100} value={form.radiusKm} onChange={(e) => setForm({ ...form, radiusKm: Number(e.target.value) })} className="w-full" />
+              <input type="range" min={10} max={100} value={form.radiusKm} onChange={(e) => setForm({ ...form, radiusKm: Number(e.target.value) })} className="w-full" title="Umkreis" />
               {lookupCount != null && (
                 <div className="text-xs text-slate-600">Händler im Umkreis: {lookupCount}</div>
               )}
@@ -132,10 +197,10 @@ export default function SubmitInquiryPage() {
           </div>
           <div>
             <label className="block text-sm mb-1">Nachricht (optional)</label>
-            <textarea className="w-full border rounded px-3 py-2" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={2000} />
+            <textarea className="w-full border rounded px-3 py-2" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={2000} title="Nachricht" placeholder="Ihre Nachricht an die Händler (optional)" />
           </div>
           <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} />
+            <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} title="Zustimmung" />
             <span>Ich stimme den AGB/Datenschutz zu.</span>
           </label>
         </div>
