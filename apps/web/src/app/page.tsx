@@ -13,12 +13,34 @@ export default function HomePage() {
       <div className="container pt-12">
         <Hero />
       </div>
+      <HowItWorks />
       {/* Kategorien */}
       <CategoriesWithHover />
       <PopularProducts />
       <Trust />
       <FloatingCartButton />
     </main>
+  );
+}
+function HowItWorks() {
+  return (
+    <section id="so-funktionierts" className="container space-y-6">
+      <h2 className="text-xl font-semibold">So funktioniert’s</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border bg-white p-4 shadow-soft">
+          <div className="font-medium mb-1">Produkte auswählen</div>
+          <p className="text-sm text-slate-700">Füge Baustoffe in den Anfragekorb.</p>
+        </div>
+        <div className="rounded-2xl border bg-white p-4 shadow-soft">
+          <div className="font-medium mb-1">Anfrage absenden</div>
+          <p className="text-sm text-slate-700">Kontaktdaten angeben und abschicken.</p>
+        </div>
+        <div className="rounded-2xl border bg-white p-4 shadow-soft">
+          <div className="font-medium mb-1">Angebote vergleichen</div>
+          <p className="text-sm text-slate-700">Händler melden sich innerhalb von 24–48 h.</p>
+        </div>
+      </div>
+    </section>
   );
 }
 

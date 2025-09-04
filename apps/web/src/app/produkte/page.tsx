@@ -1,3 +1,4 @@
+// Add breadcrumb at top of product list page
 import { env } from '../../lib/env';
 import { ProductsBrowser, Product } from '../../components/ProductsBrowser';
 

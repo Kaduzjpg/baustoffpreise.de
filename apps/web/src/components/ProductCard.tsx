@@ -1,5 +1,6 @@
 "use client";
 import { addItem, loadCart, saveCart } from '../lib/cart';
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '../lib/env';
 import { getToneByCategoryId, getToneBySlug } from '../lib/categoryColors';
@@ -54,14 +55,20 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
 
   return (
     <a href={`/produkte/${slug}`} className="group block rounded-3xl border bg-white shadow-soft overflow-hidden transition-transform ease-smooth hover:scale-[1.01] hover:shadow-lg">
-      <div
-        className="aspect-[3/2] bg-cover bg-center"
-        data-bg={imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'}
-        style={{ backgroundImage: `url(${imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'})` }}
-      />
+      <div className="relative aspect-square">
+        <Image
+          src={imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'}
+          alt={name}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+          className="object-cover"
+        />
+      </div>
       <div className="p-2.5 space-y-1">
-        <div className="text-sm font-medium leading-tight">{name}</div>
+        <div className="text-sm font-medium leading-tight clamp-2">{name}</div>
         <div className="text-xs text-slate-600">{effectiveUnit}</div>
+        {/* Preis-/Lieferhinweise */}
+        <div className="text-[11px] text-slate-600">ab Preis auf Anfrage · Lieferbar in 2–5 Tagen</div>
         {formatOptions.length > 0 && (
           <div className="pt-1">
             <div className="flex flex-wrap gap-1">

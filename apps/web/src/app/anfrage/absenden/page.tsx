@@ -34,7 +34,10 @@ export default function SubmitInquiryPage() {
       url.searchParams.set('radius', String(form.radiusKm));
       fetch(url.toString(), { signal: controller.signal })
         .then((r) => r.json())
-        .then((d) => setLookupCount(d.dealersFound))
+        .then((d) => {
+          setLookupCount(d.dealersFound);
+          if (!form.customerCity && d.city) setForm((f) => ({ ...f, customerCity: String(d.city) }));
+        })
         .catch(() => {});
       return () => controller.abort();
     } else {
@@ -149,6 +152,14 @@ export default function SubmitInquiryPage() {
     <main className="container py-8 space-y-6">
       <h1 className="text-2xl font-semibold">Anfrage</h1>
 
+      {/* Progress Stepper */}
+      <ol className="flex items-center gap-4 text-sm" aria-label="Fortschritt">
+        <li className="inline-flex items-center gap-2"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">1</span> Produkte</li>
+        <li className="inline-flex items-center gap-2 opacity-80"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">2</span> Kontaktdaten</li>
+        <li className="inline-flex items-center gap-2 opacity-80"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">3</span> Radius</li>
+        <li className="inline-flex items-center gap-2 opacity-80"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">4</span> Zusammenfassung</li>
+      </ol>
+
       {/* Anfragekorb-Abschnitt */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Deine Produkte</h2>
@@ -250,7 +261,7 @@ export default function SubmitInquiryPage() {
           </div>
           <div>
             <label className="block text-sm mb-1">Telefon (optional)</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} title="Telefon" placeholder="01234 567890" />
+            <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} title="Telefon" placeholder="01234 567890" pattern="^\+?[0-9 ()-]{6,}$" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
