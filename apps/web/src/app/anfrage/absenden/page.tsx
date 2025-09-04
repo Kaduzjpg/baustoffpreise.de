@@ -158,12 +158,14 @@ export default function SubmitInquiryPage() {
             <Link href="/produkte" className="underline">Jetzt Produkte ansehen</Link>
           </div>
         ) : (
-          <div className="space-y-4 max-w-4xl">
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4 max-w-5xl">
+            <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {cart.items.map((i) => (
-                <li key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="rounded-2xl border bg-white p-4 shadow-soft flex flex-col gap-3">
+                <li key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="rounded-2xl border bg-white p-5 shadow-soft flex flex-col gap-4">
                   {/* Bild-Platzhalter */}
-                  <div className="aspect-[4/3] w-full rounded-xl bg-slate-100" aria-hidden />
+                  <div className="h-40 md:h-48 w-full rounded-xl bg-slate-100 overflow-hidden" aria-hidden>
+                    <div className="h-full w-full bg-cover bg-center" />
+                  </div>
 
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -174,8 +176,7 @@ export default function SubmitInquiryPage() {
                     </div>
                     <button
                       onClick={() => onRemove(i.productId, (i as any).format || null, (i as any).variant || null)}
-                      className="inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-white"
-                      style={{ backgroundColor: '#dc2626' }}
+                      className="inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-white bg-red-600 hover:bg-red-700"
                       title="Position entfernen"
                     >
                       <span aria-hidden>🗑️</span> Entfernen
