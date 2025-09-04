@@ -47,10 +47,15 @@ export function CategoriesHover({ apiBase, categories, pillClassName }: Props) {
         const isOpen = openSlug === c.slug;
         const subs = cache[c.slug] || [];
         return (
-          <li key={c.id} className="relative" onMouseEnter={() => onEnter(c.slug)} onMouseLeave={onLeave}>
+          <li
+            key={c.id}
+            className={`relative ${isOpen && subs.length > 0 ? 'pb-28 md:pb-32' : ''}`}
+            onMouseEnter={() => onEnter(c.slug)}
+            onMouseLeave={onLeave}
+          >
             <CategoryPill href={`/kategorien/${c.slug}`} className={pillClassName}>{c.name}</CategoryPill>
             {isOpen && subs.length > 0 && (
-              <div className="absolute left-0 z-20 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+              <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
                 <ul className="space-y-1">
                   {subs.map((s) => (
                     <li key={s.id}>
