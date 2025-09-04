@@ -158,45 +158,80 @@ export default function SubmitInquiryPage() {
             <Link href="/produkte" className="underline">Jetzt Produkte ansehen</Link>
           </div>
         ) : (
-          <div className="space-y-4 max-w-3xl">
-            {cart.items.map((i) => (
-              <div key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="border rounded p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{i.name}</div>
-                    <div className="text-sm text-slate-600">{i.unit}</div>
-                    {(i as any).format && <div className="text-xs text-slate-600">Format: {(i as any).format}</div>}
-                    {(i as any).variant && <div className="text-xs text-slate-600">Variante: {(i as any).variant}</div>}
+          <div className="space-y-4 max-w-4xl">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {cart.items.map((i) => (
+                <li key={`${i.productId}-${(i as any).format || ''}-${(i as any).variant || ''}`} className="rounded-2xl border bg-white p-4 shadow-soft flex flex-col gap-3">
+                  {/* Bild-Platzhalter */}
+                  <div className="aspect-[4/3] w-full rounded-xl bg-slate-100" aria-hidden />
+
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="font-medium">{i.name}</div>
+                      <div className="text-sm text-slate-600">{i.unit}</div>
+                      {(i as any).format && <div className="text-xs text-slate-600">Format: {(i as any).format}</div>}
+                      {(i as any).variant && <div className="text-xs text-slate-600">Variante: {(i as any).variant}</div>}
+                    </div>
+                    <button
+                      onClick={() => onRemove(i.productId, (i as any).format || null, (i as any).variant || null)}
+                      className="inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-white"
+                      style={{ backgroundColor: '#dc2626' }}
+                      title="Position entfernen"
+                    >
+                      <span aria-hidden>🗑️</span> Entfernen
+                    </button>
                   </div>
-                  <button onClick={() => onRemove(i.productId, (i as any).format || null, (i as any).variant || null)} className="text-sm text-red-600 hover:underline">Entfernen</button>
-                </div>
-                <div className="flex items-center gap-3">
-                  <label className="text-sm" htmlFor={`qty-${i.productId}`}>Menge</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={i.quantity}
-                    onChange={(e) => onQtyChange(i.productId, Number(e.target.value), (i as any).format || null, (i as any).variant || null)}
-                    id={`qty-${i.productId}`}
-                    className="w-24 border rounded px-2 py-1"
-                    title="Menge"
-                    placeholder="1"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm" htmlFor={`note-${i.productId}`}>Notiz</label>
-                  <input
-                    type="text"
-                    value={i.note || ''}
-                    onChange={(e) => onNoteChange(i.productId, e.target.value, (i as any).format || null, (i as any).variant || null)}
-                    id={`note-${i.productId}`}
-                    placeholder="Optionale Notiz (max. 255 Zeichen)"
-                    className="border rounded px-2 py-1"
-                    title="Notiz"
-                  />
-                </div>
-              </div>
-            ))}
+
+                  {/* Menge */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm">Menge</span>
+                    <div className="inline-flex items-center rounded-2xl border bg-white">
+                      <button
+                        type="button"
+                        className="px-3 py-2 text-lg"
+                        onClick={() => onQtyChange(i.productId, Math.max(1, i.quantity - 1), (i as any).format || null, (i as any).variant || null)}
+                        aria-label="Verringern"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        value={i.quantity}
+                        onChange={(e) => onQtyChange(i.productId, Number(e.target.value || 1), (i as any).format || null, (i as any).variant || null)}
+                        id={`qty-${i.productId}`}
+                        className="w-16 text-center outline-none"
+                        title="Menge"
+                        placeholder="1"
+                      />
+                      <button
+                        type="button"
+                        className="px-3 py-2 text-lg"
+                        onClick={() => onQtyChange(i.productId, i.quantity + 1, (i as any).format || null, (i as any).variant || null)}
+                        aria-label="Erhöhen"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Notiz */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm" htmlFor={`note-${i.productId}`}>Notiz (optional)</label>
+                    <textarea
+                      value={i.note || ''}
+                      onChange={(e) => onNoteChange(i.productId, e.target.value, (i as any).format || null, (i as any).variant || null)}
+                      id={`note-${i.productId}`}
+                      placeholder="Hinweise für den Händler (max. 255 Zeichen)"
+                      className="rounded-2xl border px-3 py-2 bg-white"
+                      title="Notiz"
+                      rows={3}
+                      maxLength={255}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </section>
