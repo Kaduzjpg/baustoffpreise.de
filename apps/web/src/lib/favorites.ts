@@ -1,6 +1,7 @@
-export type FavoritesState = { ids: number[] };
+export type FavoritesState = { ids: number[]; expiresAt?: number };
 
 const STORAGE_KEY = 'favorites_v1';
+const TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 Tage
 
 export function loadFavorites(): FavoritesState {
   if (typeof window === 'undefined') return { ids: [] };
@@ -8,7 +9,11 @@ export function loadFavorites(): FavoritesState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ids: [] };
     const parsed = JSON.parse(raw) as FavoritesState;
-    return { ids: Array.isArray(parsed.ids) ? parsed.ids : [] };
+    if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+      localStorage.removeItem(STORAGE_KEY);
+      return { ids: [] };
+    }
+    return { ids: Array.isArray(parsed.ids) ? parsed.ids : [], expiresAt: parsed.expiresAt };
   } catch {
     return { ids: [] };
   }
@@ -16,7 +21,8 @@ export function loadFavorites(): FavoritesState {
 
 export function saveFavorites(state: FavoritesState) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const withTtl: FavoritesState = { ids: state.ids, expiresAt: Date.now() + TTL_MS };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(withTtl));
   try {
     const ev = new CustomEvent('favorites:updated', { detail: { count: state.ids.length } });
     window.dispatchEvent(ev);

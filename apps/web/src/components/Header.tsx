@@ -4,14 +4,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MobileNav } from './MobileNav';
 import { CategoriesMega } from './MegaMenu';
+import { loadFavorites } from '../lib/favorites';
 
 export function Header() {
   const [count, setCount] = useState(0);
+  const [favCount, setFavCount] = useState(0);
   const [q, setQ] = useState('');
   const router = useRouter();
   useEffect(() => {
     const onUpdate = (e: any) => setCount(e?.detail?.count ?? 0);
     window.addEventListener('cart:updated', onUpdate);
+    const updateFav = () => setFavCount(loadFavorites().ids.length);
+    updateFav();
+    window.addEventListener('favorites:updated', updateFav);
     return () => window.removeEventListener('cart:updated', onUpdate);
   }, []);
 
@@ -46,6 +51,13 @@ export function Header() {
           />
         </form>
         <nav className="hidden md:flex items-center gap-4 text-sm ml-auto relative">
+          <Link href="/favoriten" className="relative inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition hover:bg-slate-50 hover:shadow-md">
+            <span>☆</span>
+            <span>Favoriten</span>
+            {favCount > 0 && (
+              <span aria-label="Favoriten" className="absolute -right-3 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1 text-xs font-medium text-white">{favCount}</span>
+            )}
+          </Link>
           <Link href="/anfrage/absenden" className="relative inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition hover:bg-slate-50 hover:shadow-md">
             <span>🛒</span>
             <span>Anfragekorb</span>
