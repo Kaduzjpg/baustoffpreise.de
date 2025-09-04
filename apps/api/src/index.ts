@@ -5,6 +5,13 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { nanoid } from 'nanoid';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
+// Optional Sentry init for API
+if (process.env.SENTRY_DSN) {
+  try {
+    const Sentry = require('@sentry/node');
+    Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
+  } catch {}
+}
 import { env } from './env';
 import { pool } from './db';
 import { json } from 'express';

@@ -1,4 +1,9 @@
 import './globals.css';
+// Optional: Sentry CSR init
+if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  // Lazy import to avoid bundle bloat if not used
+  import('@sentry/nextjs').then(s => s.init({ dsn: process.env.NEXT_PUBLIC_SENTRY_DSN, tracesSampleRate: 0.1 })).catch(() => {});
+}
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ReactNode } from 'react';
