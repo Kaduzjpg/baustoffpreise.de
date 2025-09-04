@@ -14,6 +14,8 @@ const envSchema = z.object({
   SMTP_USER: z.string(),
   SMTP_PASS: z.string(),
   FROM_EMAIL: z.string()
+  // Optional: Geocoding API Key
+  // GEO_API_KEY: z.string().optional()
 });
 
 export type Env = z.infer<typeof envSchema>;

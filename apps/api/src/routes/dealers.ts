@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { pool, DealerRow } from '../db';
 import { haversineDistanceKm } from '../utils/distance';
+import fetch from 'node-fetch';
 
 const router = Router();
 
@@ -19,6 +20,17 @@ router.get('/lookup', async (req, res) => {
   }
   const { zip, radius, lat, lng } = parse.data;
 
+  // If no coords, try to resolve zip -> lat/lng via free endpoint (Open-Meteo geocoding as example)
+  let qLat = lat;
+  let qLng = lng;
+  try {
+    if ((qLat == null || qLng == null) && zip) {
+      const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${zip}&count=1&language=de&format=json`).then(r => r.json() as any);
+      const loc = geo?.results?.[0];
+      if (loc) { qLat = Number(loc.latitude); qLng = Number(loc.longitude); }
+    }
+  } catch {}
+
   // Fetch dealers
   const [rows] = await pool.query<DealerRow[]>(
     'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer'
@@ -27,8 +39,8 @@ router.get('/lookup', async (req, res) => {
   let count = 0;
   for (const d of rows) {
     const dealerRadius = typeof d.radiusKm === 'number' ? d.radiusKm : radius;
-    if (lat != null && lng != null && d.lat != null && d.lng != null) {
-      const dist = haversineDistanceKm(lat, lng, d.lat, d.lng);
+    if (qLat != null && qLng != null && d.lat != null && d.lng != null) {
+      const dist = haversineDistanceKm(qLat, qLng, d.lat, d.lng);
       if (dist <= Math.min(radius, dealerRadius)) count++;
     } else {
       if (d.zip?.slice(0, 2) === zip.slice(0, 2)) count++;
