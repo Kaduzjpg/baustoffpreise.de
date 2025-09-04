@@ -118,6 +118,15 @@ export function ProductDetailClient({
           </ul>
         </div>
       )}
+
+      {/* Skeleton Hinweis (einfacher Platzhalter, wenn Daten fehlen) */}
+      {!filteredSpecs?.length && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" aria-hidden>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-4 rounded bg-slate-200 animate-pulse" />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
