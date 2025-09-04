@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { ProductCard } from './ProductCard';
 
 export type Product = { id: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null; categoryId?: number };
@@ -98,8 +99,31 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border bg-white p-6 text-sm text-slate-700">
-          Keine Treffer – probiere eine andere Kategorie oder passe die Filter an.
+        <div className="space-y-4 rounded-2xl border bg-white p-6 text-sm text-slate-700">
+          <div>Keine Treffer – probiere eine andere Kategorie oder passe die Filter an.</div>
+          <div className="flex flex-wrap gap-2">
+            {(categories || []).slice(0, 8).map((c) => (
+              <Link key={c.id} href={`/kategorien/${c.slug}`} className="inline-flex items-center rounded-2xl border px-3 py-1.5 hover:bg-slate-50">
+                {c.name}
+              </Link>
+            ))}
+            <button
+              type="button"
+              className="inline-flex items-center rounded-2xl border px-3 py-1.5 hover:bg-slate-50"
+              onClick={() => {
+                setQ('');
+                setUnit('');
+                setCat('');
+                setBrand('');
+                setStock('');
+                setRadius('');
+                setPage(1);
+              }}
+              aria-label="Filter zurücksetzen"
+            >
+              Filter zurücksetzen
+            </button>
+          </div>
         </div>
       )}
       <div className="flex items-center justify-between">
