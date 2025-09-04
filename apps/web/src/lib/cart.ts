@@ -38,7 +38,9 @@ export function saveCart(state: CartState) {
 }
 
 export function addItem(state: CartState, item: CartItem): CartState {
-  const existing = state.items.find((i) => i.productId === item.productId);
+  const existing = state.items.find((i) =>
+    i.productId === item.productId && (i.format || null) === (item.format || null) && (i.variant || null) === (item.variant || null)
+  );
   if (existing) {
     existing.quantity += item.quantity;
     return { items: [...state.items] };
@@ -49,15 +51,25 @@ export function addItem(state: CartState, item: CartItem): CartState {
 export function updateItem(
   state: CartState,
   productId: number,
-  updates: Partial<Pick<CartItem, 'quantity' | 'note'>>
+  updates: Partial<Pick<CartItem, 'quantity' | 'note'>>,
+  format?: string | null,
+  variant?: string | null
 ): CartState {
   return {
-    items: state.items.map((i) => (i.productId === productId ? { ...i, ...updates } : i))
+    items: state.items.map((i) =>
+      i.productId === productId && (i.format || null) === (format || null) && (i.variant || null) === (variant || null)
+        ? { ...i, ...updates }
+        : i
+    )
   };
 }
 
-export function removeItem(state: CartState, productId: number): CartState {
-  return { items: state.items.filter((i) => i.productId !== productId) };
+export function removeItem(state: CartState, productId: number, format?: string | null, variant?: string | null): CartState {
+  return {
+    items: state.items.filter(
+      (i) => !(i.productId === productId && (i.format || null) === (format || null) && (i.variant || null) === (variant || null))
+    )
+  };
 }
 
 export function clearCart(): CartState {

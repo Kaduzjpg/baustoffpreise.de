@@ -8,20 +8,20 @@ export default function CartPage() {
   const [cart, setCart] = useState(loadCart());
   useEffect(() => setMounted(true), []);
 
-  function onQtyChange(productId: number, quantity: number) {
-    const next = updateItem(cart, productId, { quantity: Math.max(1, quantity) });
+  function onQtyChange(productId: number, quantity: number, format?: string | null, variant?: string | null) {
+    const next = updateItem(cart, productId, { quantity: Math.max(1, quantity) }, format, variant);
     setCart(next);
     saveCart(next);
   }
 
-  function onNoteChange(productId: number, note: string) {
-    const next = updateItem(cart, productId, { note });
+  function onNoteChange(productId: number, note: string, format?: string | null, variant?: string | null) {
+    const next = updateItem(cart, productId, { note }, format, variant);
     setCart(next);
     saveCart(next);
   }
 
-  function onRemove(productId: number) {
-    const next = removeItem(cart, productId);
+  function onRemove(productId: number, format?: string | null, variant?: string | null) {
+    const next = removeItem(cart, productId, format, variant);
     setCart(next);
     saveCart(next);
   }
@@ -49,7 +49,7 @@ export default function CartPage() {
                   {(i as any).format && <div className="text-xs text-slate-600">Format: {(i as any).format}</div>}
                   {(i as any).variant && <div className="text-xs text-slate-600">Variante: {(i as any).variant}</div>}
                 </div>
-                <button onClick={() => onRemove(i.productId)} className="text-sm text-red-600 hover:underline">
+                <button onClick={() => onRemove(i.productId, (i as any).format || null, (i as any).variant || null)} className="text-sm text-red-600 hover:underline">
                   Entfernen
                 </button>
               </div>
@@ -59,7 +59,7 @@ export default function CartPage() {
                   type="number"
                   min={1}
                   value={i.quantity}
-                  onChange={(e) => onQtyChange(i.productId, Number(e.target.value))}
+                  onChange={(e) => onQtyChange(i.productId, Number(e.target.value), (i as any).format || null, (i as any).variant || null)}
                   id={`qty-${i.productId}`}
                   className="w-24 border rounded px-2 py-1"
                 />
@@ -69,7 +69,7 @@ export default function CartPage() {
                 <input
                   type="text"
                   value={i.note || ''}
-                  onChange={(e) => onNoteChange(i.productId, e.target.value)}
+                  onChange={(e) => onNoteChange(i.productId, e.target.value, (i as any).format || null, (i as any).variant || null)}
                   id={`note-${i.productId}`}
                   placeholder="Optionale Notiz (max. 255 Zeichen)"
                   className="border rounded px-2 py-1"
