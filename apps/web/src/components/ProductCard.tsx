@@ -1,6 +1,8 @@
 "use client";
 import { addItem, loadCart, saveCart } from '../lib/cart';
 import Image from 'next/image';
+import { loadFavorites, saveFavorites, toggleFavorite, isFavorite } from '../lib/favorites';
+import { useEffect } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '../lib/env';
 import { getToneByCategoryId, getToneBySlug } from '../lib/categoryColors';
@@ -43,6 +45,13 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
     const sel = variantsForFormat.find(v => (v.variant || '') === (variantName || '')) || variantsForFormat[0];
     return sel?.unit || unit || 'Stück';
   }, [variantsForFormat, variantName, unit]);
+  const [fav, setFav] = useState<boolean>(false);
+  useEffect(() => {
+    setFav(isFavorite(loadFavorites(), id));
+    const onUpd = () => setFav(isFavorite(loadFavorites(), id));
+    window.addEventListener('favorites:updated', onUpd);
+    return () => window.removeEventListener('favorites:updated', onUpd);
+  }, [id]);
   function addToCart(e?: React.MouseEvent) {
     try { e?.preventDefault(); e?.stopPropagation(); } catch {}
     const cart = loadCart();
@@ -65,6 +74,18 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
           placeholder="blur"
           blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxyZWN0IHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnIGZpbGw9JyNlZWUnLz48L3N2Zz4="
         />
+        <button
+          aria-label={fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+          onClick={(e) => {
+            e.preventDefault();
+            const next = toggleFavorite(loadFavorites(), id);
+            saveFavorites(next);
+            setFav(isFavorite(next, id));
+          }}
+          className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-soft hover:scale-[1.03]"
+        >
+          {fav ? '★' : '☆'}
+        </button>
       </div>
       <div className="p-2.5 space-y-1">
         <div className="text-sm font-medium leading-tight clamp-2">{name}</div>
