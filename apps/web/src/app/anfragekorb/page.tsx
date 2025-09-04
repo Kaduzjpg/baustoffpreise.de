@@ -46,6 +46,8 @@ export default function CartPage() {
                 <div>
                   <div className="font-medium">{i.name}</div>
                   <div className="text-sm text-slate-600">{i.unit}</div>
+                  {(i as any).format && <div className="text-xs text-slate-600">Format: {(i as any).format}</div>}
+                  {(i as any).variant && <div className="text-xs text-slate-600">Variante: {(i as any).variant}</div>}
                 </div>
                 <button onClick={() => onRemove(i.productId)} className="text-sm text-red-600 hover:underline">
                   Entfernen

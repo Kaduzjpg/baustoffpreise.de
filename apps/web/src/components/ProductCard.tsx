@@ -1,5 +1,7 @@
 "use client";
 import { addItem, loadCart, saveCart } from '../lib/cart';
+import { useEffect, useMemo, useState } from 'react';
+import { env } from '../lib/env';
 import { getToneByCategoryId, getToneBySlug } from '../lib/categoryColors';
 
 type Props = {
@@ -15,9 +17,33 @@ type Props = {
 
 export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, categoriesMeta, categorySlug }: Props) {
   const tone = categorySlug ? getToneBySlug(categorySlug) : getToneByCategoryId(categoryId, categoriesMeta);
+  const [variants, setVariants] = useState<Array<{ format?: string | null; variant?: string | null; unit?: string | null }>>([]);
+  const [format, setFormat] = useState<string | undefined>();
+  const [variantName, setVariantName] = useState<string | undefined>();
+
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/by-slug/${slug}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!ignore && Array.isArray(j?.variants)) setVariants(j.variants);
+      } catch {}
+    })();
+    return () => { ignore = true; };
+  }, [slug]);
+
+  const formatOptions = useMemo(() => Array.from(new Set((variants || []).map(v => (v.format || '').trim()).filter(Boolean))), [variants]);
+  const variantsForFormat = useMemo(() => (variants || []).filter(v => (v.format || '') === (format || '')), [variants, format]);
+  const variantOptions = useMemo(() => Array.from(new Set(variantsForFormat.map(v => (v.variant || '').trim()).filter(Boolean))), [variantsForFormat]);
+  const effectiveUnit = useMemo(() => {
+    const sel = variantsForFormat.find(v => (v.variant || '') === (variantName || '')) || variantsForFormat[0];
+    return sel?.unit || unit || 'Stück';
+  }, [variantsForFormat, variantName, unit]);
   function addToCart() {
     const cart = loadCart();
-    const next = addItem(cart, { productId: id, name, slug, unit: unit ?? undefined, quantity: 1 });
+    const next = addItem(cart, { productId: id, name, slug, unit: effectiveUnit ?? undefined, quantity: 1, format, variant: variantName });
     saveCart(next);
     try {
       window.dispatchEvent(new CustomEvent('toast', { detail: { title: `${name} zum Anfragekorb hinzugefügt`, variant: 'success' } }));
@@ -33,7 +59,25 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
       />
       <div className="p-2.5 space-y-1">
         <div className="text-sm font-medium leading-tight">{name}</div>
-        <div className="text-xs text-slate-600">{unit}</div>
+        <div className="text-xs text-slate-600">{effectiveUnit}</div>
+        {formatOptions.length > 0 && (
+          <div className="pt-1">
+            <div className="flex flex-wrap gap-1">
+              {formatOptions.map((f) => (
+                <button key={f} onClick={(e) => { e.preventDefault(); setFormat(f); setVariantName(undefined); }} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${format === f ? 'bg-slate-900 text-white' : 'hover:bg-slate-50'}`}>{f}</button>
+              ))}
+            </div>
+          </div>
+        )}
+        {variantOptions.length > 0 && (
+          <div className="pt-1">
+            <div className="flex flex-wrap gap-1">
+              {variantOptions.map((v) => (
+                <button key={v} onClick={(e) => { e.preventDefault(); setVariantName(v); }} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${variantName === v ? 'bg-slate-900 text-white' : 'hover:bg-slate-50'}`}>{v}</button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="pt-1.5">
           <button
             onClick={addToCart}
