@@ -45,24 +45,27 @@ function HowItWorks() {
   );
 }
 
-function DealersCarousel() {
-  // Dummy-Logos – später aus API beziehen
-  const logos = [
-    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+A',
-    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+B',
-    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+C',
-    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+D'
-  ];
-  return (
-    <section className="container space-y-6">
-      <h2 className="text-xl font-semibold">Unsere Händler</h2>
-      <div className="flex items-center gap-6 overflow-x-auto py-2">
-        {logos.map((src, i) => (
-          <img key={i} src={src} alt={`Händler Logo ${i + 1}`} className="h-10 w-auto opacity-80" />
-        ))}
-      </div>
-    </section>
-  );
+async function DealersCarousel() {
+  try {
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/dealers/list`, { cache: 'force-cache', next: { revalidate: 3600 } });
+    const dealers = (await res.json()) as { id: number; name: string; city?: string }[];
+    if (!Array.isArray(dealers) || dealers.length === 0) return null;
+    return (
+      <section className="container space-y-6">
+        <h2 className="text-xl font-semibold">Unsere Händler</h2>
+        <div className="flex items-center gap-6 overflow-x-auto py-2">
+          {dealers.map((d) => (
+            <div key={d.id} className="inline-flex items-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm opacity-80">
+              <span aria-hidden>🏬</span>
+              <span>{d.name}{d.city ? `, ${d.city}` : ''}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  } catch {
+    return null;
+  }
 }
 
 async function CategoriesWithHover() {

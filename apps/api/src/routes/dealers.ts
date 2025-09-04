@@ -38,6 +38,19 @@ router.get('/lookup', async (req, res) => {
   res.json({ dealersFound: count });
 });
 
+// List of dealers for UI sections (carousel)
+router.get('/list', async (_req, res) => {
+  try {
+    const [rows] = await pool.query<DealerRow[]>(
+      'SELECT id, name, zip, city FROM Dealer ORDER BY name LIMIT 50'
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('DB error on GET /api/dealers/list:', err);
+    return res.status(503).json({ error: 'db_unavailable' });
+  }
+});
+
 export default router;
 
 

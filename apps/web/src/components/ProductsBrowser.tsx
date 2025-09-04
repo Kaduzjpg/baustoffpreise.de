@@ -111,7 +111,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
           <option value="lager">Lagerware</option>
           <option value="bestell">Bestellware</option>
         </select>
-        <select value={radius} onChange={(e) => { setRadius(e.target.value); setPage(1); }} className="border rounded px-3 py-2" aria-label="Liefergebiet">
+        <select value={radius} onChange={(e) => { setRadius(e.target.value); setPage(1); }} className="border rounded px-3 py-2" aria-label="Liefergebiet (Radius)">
           <option value="">Liefergebiet</option>
           {[10,20,30,50,75,100].map(r => <option key={r} value={String(r)}>{r} km</option>)}
         </select>
