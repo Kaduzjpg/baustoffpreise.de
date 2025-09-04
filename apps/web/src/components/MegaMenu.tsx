@@ -76,7 +76,7 @@ export function CategoriesMega() {
                 <ul className="space-y-1 text-sm">
                   {(subs[c.slug] || []).slice(0, 6).map(s => (
                     <li key={s.id}>
-                      <Link href={`/kategorien/${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
+                      <Link href={`/kategorien/${c.slug}?sub=${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
                     </li>
                   ))}
                 </ul>

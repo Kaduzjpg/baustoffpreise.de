@@ -59,7 +59,7 @@ export function CategoriesHover({ apiBase, categories, pillClassName }: Props) {
                 <ul className="space-y-1">
                   {subs.map((s) => (
                     <li key={s.id}>
-                      <Link href={`/kategorien/${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
+                      <Link href={`/kategorien/${c.slug}?sub=${s.slug}`} className="block rounded-xl px-3 py-1.5 hover:bg-slate-50">{s.name}</Link>
                     </li>
                   ))}
                 </ul>
