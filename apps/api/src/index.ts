@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
+import { nanoid } from 'nanoid';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import { env } from './env';
 import { pool } from './db';
@@ -20,7 +21,31 @@ app.use(
     credentials: false
   })
 );
-app.use(morgan('dev'));
+// Request ID + structured logging
+app.use((req, res, next) => {
+  (req as any).id = (req.headers['x-request-id'] as string) || nanoid(10);
+  res.setHeader('x-request-id', (req as any).id);
+  next();
+});
+
+// JSON logs without personenbezogene Daten (keine Bodies)
+morgan.token('id', (req) => String((req as any).id || '')); 
+app.use(
+  morgan((tokens, req, res) => {
+    const log = {
+      ts: new Date().toISOString(),
+      level: 'info',
+      requestId: tokens.id(req, res),
+      method: tokens.method(req, res),
+      url: tokens.url(req, res),
+      status: Number(tokens.status(req, res) || 0),
+      length: tokens.res(req, res, 'content-length') || '0',
+      responseTimeMs: Number(tokens['response-time'](req, res) || 0),
+      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    } as const;
+    return JSON.stringify(log);
+  })
+);
 app.use(json({ limit: '1mb' }));
 
 const rateLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
@@ -56,7 +81,12 @@ app.use('/api/products', productsRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Central error handler
-  console.error(err);
+  try {
+    const rid = (_req as any)?.id;
+    console.error(JSON.stringify({ ts: new Date().toISOString(), level: 'error', requestId: rid, msg: err?.message || 'Unhandled error' }));
+  } catch {
+    console.error(err);
+  }
   res.status(err?.status || 500).json({ error: 'Internal Server Error' });
 });
 

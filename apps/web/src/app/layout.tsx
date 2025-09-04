@@ -50,6 +50,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="de">
       <body className="min-h-screen bg-surface text-ink antialiased">
+        {/* Sentry placeholder – hier könnte @sentry/nextjs initialisiert werden */}
         <Header />
         <ToastHost />
         <main>{children}</main>
