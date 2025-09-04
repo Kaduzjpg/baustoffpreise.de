@@ -42,7 +42,8 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
     const sel = variantsForFormat.find(v => (v.variant || '') === (variantName || '')) || variantsForFormat[0];
     return sel?.unit || unit || 'Stück';
   }, [variantsForFormat, variantName, unit]);
-  function addToCart() {
+  function addToCart(e?: React.MouseEvent) {
+    try { e?.preventDefault(); e?.stopPropagation(); } catch {}
     const cart = loadCart();
     const next = addItem(cart, { productId: id, name, slug, unit: effectiveUnit ?? undefined, quantity: Math.max(1, qty), format, variant: variantName });
     saveCart(next);
@@ -91,7 +92,7 @@ export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, catego
         </div>
         <div className="pt-1.5">
           <button
-            onClick={addToCart}
+            onClick={(e) => addToCart(e)}
             className="w-full inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-xs text-white bg-brand-green hover:bg-brand-green/90 shadow-soft"
           >
             <span>🛒</span>
