@@ -28,6 +28,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   return (
     <main className="container py-8 space-y-8">
       <Breadcrumbs items={[{ href: '/', label: 'Start' }, { href: '/produkte', label: 'Produkte' }, { label: product.name }]} />
+      <h1 className="text-3xl font-semibold leading-tight">{product.name}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Galerie */}
