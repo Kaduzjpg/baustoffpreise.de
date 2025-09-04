@@ -46,7 +46,7 @@ export function ProductDetailClient({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl md:text-3xl font-semibold leading-tight">{name}</h1>
+      {/* Titel wird auf der rechten Spalte nicht erneut angezeigt */}
       {description && <p className="text-slate-700 whitespace-pre-line">{description}</p>}
 
       {formats.length > 0 && (

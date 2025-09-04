@@ -43,8 +43,6 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
 
         {/* Rechte Spalte: Info & CTA */}
         <div className="space-y-4">
-          <h1 className="text-3xl font-semibold leading-tight">{product.name}</h1>
-          {product.description && <p className="text-slate-700 whitespace-pre-line">{product.description}</p>}
           <ProductDetailClient
             name={product.name}
             slug={product.slug}
