@@ -118,6 +118,41 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
           </ul>
         </section>
       )}
+
+      {/* JSON-LD Schema.org */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Start', item: `${process.env.NEXT_PUBLIC_BASE_URL || ''}/` },
+              { '@type': 'ListItem', position: 2, name: 'Produkte', item: `${process.env.NEXT_PUBLIC_BASE_URL || ''}/produkte` },
+              { '@type': 'ListItem', position: 3, name: product.name, item: `${process.env.NEXT_PUBLIC_BASE_URL || ''}/produkte/${product.slug}` }
+            ]
+          })
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            image: product.imageUrl ? [product.imageUrl] : undefined,
+            description: product.description || undefined,
+            sku: product.slug,
+            offers: {
+              '@type': 'AggregateOffer',
+              priceCurrency: 'EUR',
+              lowPrice: '0',
+              availability: 'https://schema.org/InStock'
+            }
+          })
+        }}
+      />
     </main>
   );
 }
