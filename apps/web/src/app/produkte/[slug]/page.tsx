@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { env } from '../../../lib/env';
 import { ProductDetailClient } from '../../../components/ProductDetailClient';
 import { Breadcrumbs } from '../../../components/Breadcrumbs';
+import type { Metadata } from 'next';
 
 type Variant = { id: number; productId: number; format?: string | null; variant?: string | null; unit?: string | null; sku?: string | null; imageUrl?: string | null };
 type Spec = { id: number; productId: number; variantId?: number | null; format?: string | null; variant?: string | null; specKey: string; specValue: string };
@@ -119,6 +120,21 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
       )}
     </main>
   );
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/by-slug/${params.slug}`, { cache: 'force-cache', next: { revalidate: 1800 } });
+  const product = res.ok ? await res.json() : null;
+  const title = product?.name ? `${product.name} | Anfrage-Shop` : 'Produkt | Anfrage-Shop';
+  const description = product?.description || 'Baustoffe anfragen und Angebote vergleichen.';
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/produkte/${params.slug}`;
+  const image = product?.imageUrl || `${process.env.NEXT_PUBLIC_BASE_URL || ''}/og-image.png`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, url, images: [{ url: image }] },
+    twitter: { card: 'summary_large_image', title, description, images: [image] }
+  };
 }
 
 

@@ -67,7 +67,7 @@ function DealersCarousel() {
 
 async function CategoriesWithHover() {
   try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'no-store' });
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'force-cache', next: { revalidate: 1200 } });
     const cats = await res.json();
     if (!Array.isArray(cats) || cats.length === 0) return null;
     const top = cats;
@@ -87,7 +87,7 @@ type Product = { id: number; name: string; slug: string; unit?: string | null; i
 async function PopularProducts() {
   let products: Product[] = [];
   try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'no-store' });
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'force-cache', next: { revalidate: 1200 } });
     products = ((await res.json()) as Product[]).slice(0, 6);
   } catch {}
 
