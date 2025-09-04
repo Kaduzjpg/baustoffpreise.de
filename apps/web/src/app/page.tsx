@@ -32,9 +32,6 @@ async function CategoriesWithHover() {
       <section className="container space-y-6">
         <h2 className="text-xl font-semibold">Kategorien</h2>
         <CategoriesHover apiBase={env.NEXT_PUBLIC_API_BASE} categories={top} pillClassName="px-6 md:px-8" />
-        <div className="flex justify-end">
-          <Link href="/produkte" className="text-sm underline">Alle Produkte anzeigen</Link>
-        </div>
       </section>
     );
   } catch {
