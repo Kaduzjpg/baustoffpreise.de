@@ -46,7 +46,7 @@ export function ProductDetailClient({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold leading-tight">{name}</h1>
+      <h1 className="text-2xl md:text-3xl font-semibold leading-tight">{name}</h1>
       {description && <p className="text-slate-700 whitespace-pre-line">{description}</p>}
 
       {formats.length > 0 && (
@@ -74,10 +74,14 @@ export function ProductDetailClient({
       <div className="flex items-end gap-3">
         <div>
           <label htmlFor="qty" className="block text-sm text-slate-600">Menge</label>
-          <input id="qty" title="Menge" placeholder="1" type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))} className="w-28 border rounded px-3 py-2" />
+          <div className="inline-flex items-center rounded-full border">
+            <button type="button" aria-label="Verringern" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 text-lg">−</button>
+            <input id="qty" title="Menge" placeholder="1" inputMode="numeric" pattern="[0-9]*" type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))} className="w-20 text-center outline-none" />
+            <button type="button" aria-label="Erhöhen" onClick={() => setQty(qty + 1)} className="px-3 py-2 text-lg">+</button>
+          </div>
         </div>
         <div className="pb-2 text-sm text-slate-700">{effectiveUnit}</div>
-        <Link href={`/anfragekorb?add=${slug}&qty=${qty}`} className="ml-auto inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-black/90">In Anfragekorb</Link>
+        <Link href={`/anfragekorb?add=${slug}&qty=${qty}`} className="ml-auto btn-cta">🛒 In Anfragekorb</Link>
       </div>
 
       {filteredSpecs && filteredSpecs.length > 0 && (

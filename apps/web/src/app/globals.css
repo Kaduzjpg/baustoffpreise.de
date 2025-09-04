@@ -13,6 +13,9 @@
   .btn-primary { @apply btn bg-brand-green text-white hover:scale-[1.02] hover:shadow-soft; }
   .btn-primary:hover { @apply bg-brand-green/90; }
   .btn-outline { @apply btn border border-brand-green text-brand-green bg-white hover:bg-[#E8F5E9]; }
+  /* Produkt-CTA in Orange (#FF9800) */
+  .btn-cta { @apply inline-flex items-center justify-center rounded-[10px] h-12 px-5 text-sm font-medium; background-color:#FF9800; color:#1B1B1B; }
+  .btn-cta:hover { background-color:#F57C00; }
 }
 
 
