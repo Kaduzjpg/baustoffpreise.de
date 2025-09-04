@@ -24,6 +24,7 @@ app.use(morgan('dev'));
 app.use(json({ limit: '1mb' }));
 
 const rateLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
+const inquiryLimiter = new RateLimiterMemory({ points: 5, duration: 60 });
 app.use(async (req, res, next) => {
   try {
     await rateLimiter.consume(req.ip || 'unknown');
@@ -43,7 +44,14 @@ app.get('/healthz', async (_req, res) => {
 });
 
 app.use('/api/dealers', dealersRouter);
-app.use('/api/inquiry', inquiryRouter);
+app.use('/api/inquiry', async (req, res, next) => {
+  try {
+    await inquiryLimiter.consume(req.ip || 'unknown');
+    next();
+  } catch {
+    res.status(429).json({ error: 'Too many inquiries' });
+  }
+}, inquiryRouter);
 app.use('/api/products', productsRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

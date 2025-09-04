@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { pool, DealerRow } from '../db';
 import { sendMail } from '../mailer';
 import { haversineDistanceKm } from '../utils/distance';
+import fetch from 'node-fetch';
 
 const router = Router();
 
@@ -40,6 +41,19 @@ router.post('/submit', async (req, res) => {
     return res.status(400).json({ error: 'Invalid body', details: parse.error.flatten() });
   }
   const data = parse.data;
+
+  // Basic bot protection: optional Turnstile/hCaptcha token verification
+  try {
+    const token = (req.headers['x-turnstile-token'] as string) || (req.headers['x-hcaptcha-token'] as string);
+    if (token) {
+      const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret: process.env.TURNSTILE_SECRET || '', response: token }) as any
+      }).then(r => r.json() as any);
+      if (!resp?.success) return res.status(400).json({ error: 'captcha_failed' });
+    }
+  } catch {}
 
   const conn = await pool.getConnection();
   try {
