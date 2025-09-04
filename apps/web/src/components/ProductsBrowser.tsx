@@ -1,6 +1,7 @@
 "use client";
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { env } from '../lib/env';
 import { ProductCard } from './ProductCard';
 
 export type Product = { id: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null; categoryId?: number };
@@ -14,6 +15,8 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
   const [stock, setStock] = useState(''); // lager/bestell
   const [radius, setRadius] = useState('');
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [server, setServer] = useState<{ items: Product[]; total: number; page: number; pageSize: number } | null>(null);
 
   const units = useMemo(() => Array.from(new Set(products.map(p => (p.unit || '').trim()).filter(Boolean))), [products]);
 
@@ -36,10 +39,31 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
     });
   }, [products, q, unit, cat]);
 
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const current = Math.min(page, totalPages);
-  const sliced = filtered.slice((current - 1) * pageSize, current * pageSize);
+  // SSR/CSR Hybrid: Bei Interaktion auf serverseitige Suche wechseln
+  useEffect(() => {
+    setLoading(true);
+    const controller = new AbortController();
+    const sp = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+      q,
+      unit,
+      categoryId: cat,
+      brand,
+      stock
+    });
+    fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/search?${sp.toString()}`, { signal: controller.signal, cache: 'no-store' })
+      .then(r => r.json())
+      .then(j => setServer(j))
+      .catch(() => setServer(null))
+      .finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [q, unit, cat, brand, stock, page, pageSize]);
+
+  const total = server?.total ?? filtered.length;
+  const current = server?.page ?? page;
+  const totalPages = Math.max(1, Math.ceil(total / (server?.pageSize ?? pageSize)));
+  const sliced = server?.items ?? filtered.slice((current - 1) * pageSize, current * pageSize);
 
   function go(n: number) {
     const next = Math.min(Math.max(1, n), totalPages);
@@ -92,7 +116,17 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
           {[10,20,30,50,75,100].map(r => <option key={r} value={String(r)}>{r} km</option>)}
         </select>
       </div>
-      {sliced.length > 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" aria-busy>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="rounded-2xl border bg-white p-3 shadow-soft">
+              <div className="aspect-square rounded-xl bg-slate-200 animate-pulse" />
+              <div className="mt-3 h-4 rounded bg-slate-200 animate-pulse" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-slate-200 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      ) : sliced.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {sliced.map(p => (
             <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} />

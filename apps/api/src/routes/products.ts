@@ -15,7 +15,8 @@ router.get('/categories', async (_req, res, next) => {
   }
 });
 
-router.get('/list', async (_req, res, next) => {
+// Legacy full list (kept for compatibility)
+router.get('/list', async (_req, res) => {
   try {
     const [rows] = await pool.query<ProductRow[]>(
       'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` ORDER BY name'
@@ -23,6 +24,39 @@ router.get('/list', async (_req, res, next) => {
     res.json(rows);
   } catch (err) {
     console.error('DB error on GET /api/products/list:', err);
+    return res.status(503).json({ error: 'db_unavailable' });
+  }
+});
+
+// Server-side search with pagination & filters
+router.get('/search', async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const pageSize = Math.min(60, Math.max(1, parseInt(String(req.query.pageSize || '12'), 10) || 12));
+    const unit = String(req.query.unit || '').trim();
+    const categoryId = parseInt(String(req.query.categoryId || ''), 10);
+    const brand = String(req.query.brand || '').trim();
+    const stock = String(req.query.stock || '').trim();
+    const q = String(req.query.q || '').trim();
+
+    const where: string[] = [];
+    const params: any[] = [];
+    if (q) { where.push('(name LIKE ? OR slug LIKE ? OR keywords LIKE ? OR description LIKE ?)'); params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`); }
+    if (unit) { where.push('unit = ?'); params.push(unit); }
+    if (!isNaN(categoryId)) { where.push('categoryId = ?'); params.push(categoryId); }
+    if (brand) { where.push('brand = ?'); params.push(brand); }
+    if (stock) { where.push('stockType = ?'); params.push(stock); }
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+    const [[{ cnt }]]: any = await pool.query(`SELECT COUNT(*) AS cnt FROM Product ${whereSql}`, params);
+    const offset = (page - 1) * pageSize;
+    const [rows] = await pool.query<any[]>(
+      `SELECT id, categoryId, name, slug, unit, imageUrl, description FROM Product ${whereSql} ORDER BY name LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
+    res.json({ items: rows, total: cnt, page, pageSize });
+  } catch (err) {
+    console.error('DB error on GET /api/products/search:', err);
     return res.status(503).json({ error: 'db_unavailable' });
   }
 });
