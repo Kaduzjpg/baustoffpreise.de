@@ -20,6 +20,7 @@ export default function SubmitInquiryPage() {
     consent: false
   });
   const [files, setFiles] = useState<File[]>([]);
+  const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
   const [lookupCount, setLookupCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,6 +86,13 @@ export default function SubmitInquiryPage() {
     }
     if (cart.items.length === 0) {
       setError('Der Anfragekorb ist leer.');
+      return;
+    }
+
+    // Clientseitige Dateigrößenprüfung
+    const tooLarge = (files || []).find((f) => f.size > MAX_FILE_BYTES);
+    if (tooLarge) {
+      setError(`Die Datei "${tooLarge.name}" ist größer als 5 MB.`);
       return;
     }
 
@@ -237,7 +245,20 @@ export default function SubmitInquiryPage() {
           </div>
           <div>
             <label className="block text-sm mb-1">Anhänge (max. 8 Dateien, je ≤ 5 MB)</label>
-            <input type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp" onChange={(e) => setFiles(Array.from(e.target.files || []).slice(0, 8))} title="Anhänge" />
+            <input
+              type="file"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.webp"
+              onChange={(e) => {
+                const selected = Array.from(e.target.files || []);
+                const filtered = selected.filter((f) => f.size <= MAX_FILE_BYTES).slice(0, 8);
+                if (selected.length !== filtered.length) {
+                  setError('Einige Dateien wurden verworfen, da sie größer als 5 MB sind.');
+                }
+                setFiles(filtered);
+              }}
+              title="Anhänge"
+            />
             {files.length > 0 && <div className="text-xs text-slate-600 mt-1">{files.length} Datei(en) ausgewählt</div>}
           </div>
           <label className="inline-flex items-center gap-2 text-sm">
