@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 function Footer() {
   return (
-    <footer className="mt-16 bg-anthracite text-white">
+    <footer className="mt-16 bg-footer text-white">
       <div className="container py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
         <div>
           <div className="font-semibold mb-3">Quicklinks</div>
@@ -27,8 +27,8 @@ function Footer() {
         <div>
           <div className="font-semibold mb-3">Kontakt</div>
           <ul className="space-y-2 text-white/80">
-            <li>E-Mail: angebot@deinedomain.de</li>
-            <li>Telefon: 01234 / 567890</li>
+            <li className="text-white">E-Mail: <a href="mailto:angebot@deinedomain.de" className="underline">angebot@deinedomain.de</a></li>
+            <li className="text-white">Telefon: <a href="tel:01234567890" className="underline">01234 / 567890</a></li>
           </ul>
         </div>
         <div>
@@ -49,7 +49,7 @@ function Footer() {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="de">
-      <body className="min-h-screen bg-white text-slate-900 antialiased">
+      <body className="min-h-screen bg-surface text-ink antialiased">
         <Header />
         <ToastHost />
         <main>{children}</main>

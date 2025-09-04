@@ -35,3 +35,6 @@ export default async function CategoryDetailPage({ params }: { params: { slug: s
 
 
 
+
+
+

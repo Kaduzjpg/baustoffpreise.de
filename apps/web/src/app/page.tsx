@@ -31,7 +31,7 @@ async function CategoriesTeaser() {
     return (
       <section className="container space-y-6">
         <h2 className="text-xl font-semibold">Kategorien</h2>
-        <CategoriesHover apiBase={env.NEXT_PUBLIC_API_BASE} categories={top} pillClassName="w-64" />
+        <CategoriesHover apiBase={env.NEXT_PUBLIC_API_BASE} categories={top} pillClassName="w-64 px-6 md:px-8" />
       </section>
     );
   } catch {

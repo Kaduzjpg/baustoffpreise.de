@@ -9,15 +9,10 @@
 * { outline-offset: 2px; }
 
 @layer components {
-  .btn {
-    @apply inline-flex items-center justify-center rounded px-5 py-2.5 text-sm transition-transform ease-smooth;
-  }
-  .btn-primary {
-    @apply btn bg-anthracite text-white hover:scale-[1.02] hover:shadow-soft;
-  }
-  .btn-outline {
-    @apply btn border border-anthracite text-anthracite hover:bg-white/60;
-  }
+  .btn { @apply inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm transition-transform ease-smooth; }
+  .btn-primary { @apply btn bg-brand-green text-white hover:scale-[1.02] hover:shadow-soft; }
+  .btn-primary:hover { @apply bg-brand-green/90; }
+  .btn-outline { @apply btn border border-brand-green text-brand-green bg-white hover:bg-[#E8F5E9]; }
 }
 
 

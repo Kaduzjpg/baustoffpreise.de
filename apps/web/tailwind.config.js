@@ -10,8 +10,19 @@ module.exports = {
     extend: {
       colors: {
         anthracite: '#1a1a1a',
-        brand: '#009966',
-        light: '#f5f5f5'
+        light: '#f5f5f5',
+        // Brand palette
+        'brand-green': '#2E7D32',
+        'brand-blue': '#1976D2',
+        cta: {
+          DEFAULT: '#FF9800',
+          dark: '#F57C00'
+        },
+        // Surfaces & text
+        surface: '#F9F9F9',
+        ink: '#333333',
+        // Footer
+        footer: '#2E2E2E'
       },
       boxShadow: {
         soft: '0 6px 24px rgba(0,0,0,0.06)'

@@ -52,30 +52,32 @@ export default function CartPage() {
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <label className="text-sm">Menge</label>
+                <label className="text-sm" htmlFor={`qty-${i.productId}`}>Menge</label>
                 <input
                   type="number"
                   min={1}
                   value={i.quantity}
                   onChange={(e) => onQtyChange(i.productId, Number(e.target.value))}
+                  id={`qty-${i.productId}`}
                   className="w-24 border rounded px-2 py-1"
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm">Notiz</label>
+                <label className="text-sm" htmlFor={`note-${i.productId}`}>Notiz</label>
                 <input
                   type="text"
                   value={i.note || ''}
                   onChange={(e) => onNoteChange(i.productId, e.target.value)}
-                  className="border rounded px-2 py-1"
+                  id={`note-${i.productId}`}
                   placeholder="Optionale Notiz (max. 255 Zeichen)"
+                  className="border rounded px-2 py-1"
                 />
               </div>
             </div>
           ))}
           <div className="flex justify-end">
-            <Link href="/anfrage/absenden" className="inline-flex items-center px-4 py-2 rounded bg-black text-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-2">
-              Weiter zur Anfrage
+            <Link href="/anfrage/absenden" className="btn-primary">
+              Angebot anfordern
             </Link>
           </div>
           <p className="text-sm text-slate-600">Hinweis: Preise kommen als Angebot per E-Mail.</p>
