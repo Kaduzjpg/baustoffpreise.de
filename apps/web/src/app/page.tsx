@@ -17,6 +17,7 @@ export default function HomePage() {
       {/* Kategorien */}
       <CategoriesWithHover />
       <PopularProducts />
+      <DealersCarousel />
       <Trust />
       <FloatingCartButton />
     </main>
@@ -39,6 +40,26 @@ function HowItWorks() {
           <div className="font-medium mb-1">Angebote vergleichen</div>
           <p className="text-sm text-slate-700">Händler melden sich innerhalb von 24–48 h.</p>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function DealersCarousel() {
+  // Dummy-Logos – später aus API beziehen
+  const logos = [
+    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+A',
+    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+B',
+    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+C',
+    'https://dummyimage.com/140x60/000/fff&text=H%C3%A4ndler+D'
+  ];
+  return (
+    <section className="container space-y-6">
+      <h2 className="text-xl font-semibold">Unsere Händler</h2>
+      <div className="flex items-center gap-6 overflow-x-auto py-2">
+        {logos.map((src, i) => (
+          <img key={i} src={src} alt={`Händler Logo ${i + 1}`} className="h-10 w-auto opacity-80" />
+        ))}
       </div>
     </section>
   );
