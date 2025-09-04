@@ -46,6 +46,28 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // Skeleton, wenn noch keine Produkte geliefert wurden
+  if (!products || products.length === 0) {
+    return (
+      <div className="space-y-6" aria-busy>
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-10 rounded bg-slate-200 animate-pulse" />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="rounded-2xl border bg-white p-3 shadow-soft">
+              <div className="aspect-square rounded-xl bg-slate-200 animate-pulse" />
+              <div className="mt-3 h-4 rounded bg-slate-200 animate-pulse" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-slate-200 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
@@ -69,11 +91,17 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
           {[10,20,30,50,75,100].map(r => <option key={r} value={String(r)}>{r} km</option>)}
         </select>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {sliced.map(p => (
-          <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} />
-        ))}
-      </div>
+      {sliced.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {sliced.map(p => (
+            <ProductCard key={p.id} id={p.id} name={p.name} slug={p.slug} unit={p.unit} imageUrl={p.imageUrl || undefined} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border bg-white p-6 text-sm text-slate-700">
+          Keine Treffer – probiere eine andere Kategorie oder passe die Filter an.
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="text-sm text-slate-600">{(current - 1) * pageSize + 1}-{Math.min(current * pageSize, total)} von {total}</div>
         <div className="flex items-center gap-2">
