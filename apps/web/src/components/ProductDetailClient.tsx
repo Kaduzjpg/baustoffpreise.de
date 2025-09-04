@@ -83,6 +83,13 @@ export function ProductDetailClient({
         <div className="pb-2 text-sm text-slate-700">{effectiveUnit}</div>
         <Link href={`/anfragekorb?add=${slug}&qty=${qty}`} className="ml-auto btn-cta">🛒 In Anfragekorb</Link>
       </div>
+      {/* Sticky CTA mobil */}
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-white/90 backdrop-blur">
+        <div className="container py-3 flex items-center gap-3">
+          <div className="text-xs text-slate-600">Kostenlos & unverbindlich</div>
+          <Link href={`/anfragekorb?add=${slug}&qty=${qty}`} className="ml-auto btn-cta">🛒 In Anfragekorb</Link>
+        </div>
+      </div>
 
       {filteredSpecs && filteredSpecs.length > 0 && (
         <div>

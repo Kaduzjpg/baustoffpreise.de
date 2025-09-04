@@ -68,6 +68,39 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         </section>
       )}
 
+      {/* Trust */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border bg-white p-4 shadow-soft text-center">
+          <div className="font-medium">50+ Händler in deiner Region</div>
+          <div className="text-xs text-slate-600">Breites Netzwerk</div>
+        </div>
+        <div className="rounded-2xl border bg-white p-4 shadow-soft text-center">
+          <div className="font-medium">Sichere Anfrage</div>
+          <div className="text-xs text-slate-600">Übermittlung per E-Mail</div>
+        </div>
+        <div className="rounded-2xl border bg-white p-4 shadow-soft text-center">
+          <div className="font-medium">Kostenlos & unverbindlich</div>
+          <div className="text-xs text-slate-600">Antwort i. d. R. &lt;48 h&gt;</div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">FAQ</h2>
+        <details className="rounded-2xl border bg-white p-4 shadow-soft">
+          <summary className="cursor-pointer font-medium">Wie funktioniert die Anfrage?</summary>
+          <p className="mt-2 text-sm text-slate-700">Produkte in den Anfragekorb legen, Kontaktdaten angeben und absenden. Händler antworten dir per E-Mail.</p>
+        </details>
+        <details className="rounded-2xl border bg-white p-4 shadow-soft">
+          <summary className="cursor-pointer font-medium">Wann erhalte ich Angebote?</summary>
+          <p className="mt-2 text-sm text-slate-700">In der Regel innerhalb von 48 Stunden, abhängig von Produkt und Region.</p>
+        </details>
+        <details className="rounded-2xl border bg-white p-4 shadow-soft">
+          <summary className="cursor-pointer font-medium">Wie hoch sind die Lieferkosten?</summary>
+          <p className="mt-2 text-sm text-slate-700">Die Lieferkosten hängen von Menge, Entfernung und Produkt ab. Du erhältst sie im Händlerangebot.</p>
+        </details>
+      </section>
+
       {/* Bundles */}
       {Array.isArray(product.bundles) && product.bundles.length > 0 && (
         <section className="space-y-3">
