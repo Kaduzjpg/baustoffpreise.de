@@ -419,7 +419,9 @@ export default function SubmitInquiryPage() {
             </ul>
             <label className="inline-flex items-center gap-2">
               <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} title="Zustimmung" />
-              <span>Ich stimme den AGB/Datenschutz zu.</span>
+              <span>
+                Ich stimme den <a href="/agb" className="underline">AGB</a> und der <a href="/datenschutz" className="underline">Datenschutzerklärung</a> zu.
+              </span>
             </label>
           </div>
         )}
