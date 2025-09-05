@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { env } from '../../../lib/env';
 import { ProductDetailClient } from '../../../components/ProductDetailClient';
 import { Breadcrumbs } from '../../../components/Breadcrumbs';
@@ -34,11 +35,28 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Galerie */}
         <div className="space-y-3">
-          <div className="rounded-3xl overflow-hidden border bg-white shadow-soft aspect-[4/3] bg-cover bg-center" style={{ backgroundImage: `url(${product.imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'})` }} />
+          <div className="relative rounded-3xl overflow-hidden border bg-white shadow-soft aspect-[4/3]">
+            <Image
+              src={product.imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+              priority
+            />
+          </div>
           {/* Platzhalter für Thumbnails (1-3) */}
           <div className="grid grid-cols-3 gap-2">
             {[product.imageUrl, product.imageUrl, product.imageUrl].slice(0, 3).map((img, idx) => (
-              <div key={idx} className="aspect-[4/3] rounded-xl border bg-white shadow-soft bg-cover bg-center" style={{ backgroundImage: `url(${img || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'})` }} />
+              <div key={idx} className="relative aspect-[4/3] rounded-xl border bg-white shadow-soft overflow-hidden">
+                <Image
+                  src={img || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'}
+                  alt={`${product.name} – Vorschaubild ${idx + 1}`}
+                  fill
+                  sizes="(max-width: 768px) 33vw, 10vw"
+                  className="object-cover"
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -110,7 +128,15 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
             {product.bundles.map((b) => (
               <li key={b.id}>
                 <a href={`/produkte/${b.slug}`} className="block rounded-2xl border overflow-hidden bg-white shadow-soft hover:shadow-md transition">
-                  <div className="aspect-[3/2] bg-cover bg-center" style={{ backgroundImage: `url(${b.imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'})` }} />
+                  <div className="relative aspect-[3/2]">
+                    <Image
+                      src={b.imageUrl || 'https://images.unsplash.com/photo-1581093458791-9d09b8f3a8a0?q=80&w=1200&auto=format&fit=crop'}
+                      alt={b.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 20vw"
+                      className="object-cover"
+                    />
+                  </div>
                   <div className="p-2 text-sm">{b.name}</div>
                 </a>
               </li>

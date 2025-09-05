@@ -39,8 +39,8 @@ function Footer() {
         <div>
           <div className="font-semibold mb-3">Rechtliches</div>
           <ul className="space-y-2 text-white/80">
-            <li><Link href="#" className="hover:underline">Impressum</Link></li>
-            <li><Link href="#" className="hover:underline">Datenschutz</Link></li>
+            <li><Link href="/impressum" className="hover:underline">Impressum</Link></li>
+            <li><Link href="/datenschutz" className="hover:underline">Datenschutz</Link></li>
           </ul>
         </div>
       </div>

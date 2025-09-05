@@ -1,10 +1,20 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden rounded-3xl border bg-surface">
       <div className="absolute inset-0">
-        <div className="h-full w-full bg-[url('https://images.unsplash.com/photo-1600585154340-1e4ce9a39ddb?q=80&w=1400&auto=format&fit=crop')] bg-cover bg-center opacity-70" />
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1600585154340-1e4ce9a39ddb?q=80&w=1400&auto=format&fit=crop"
+            alt="Baustoffe im Lager – Symbolbild für Bau und Materialien"
+            fill
+            sizes="100vw"
+            className="object-cover opacity-70"
+            priority
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-br from-white/85 to-white/10" />
       </div>
       <div className="relative container py-16 md:py-24 grid md:grid-cols-2 gap-8 items-center">
