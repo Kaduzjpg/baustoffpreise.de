@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { pool, ProductRow, CategoryRow, SubcategoryRow } from '../db';
+import { pool, db } from '../db';
 
 const router = Router();
 
@@ -42,18 +42,27 @@ router.get('/search', async (req, res) => {
     const zip = String(req.query.zip || '').trim();
     const radiusKm = parseInt(String(req.query.radius || ''), 10);
 
-    const where: string[] = [];
-    const params: any[] = [];
-    if (q) { where.push('(name LIKE ? OR slug LIKE ? OR keywords LIKE ? OR description LIKE ?)'); params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`); }
-    if (unit) { where.push('unit = ?'); params.push(unit); }
-    if (!isNaN(categoryId)) { where.push('categoryId = ?'); params.push(categoryId); }
-    if (brand) { where.push('brand = ?'); params.push(brand); }
-    if (stock) { where.push('stockType = ?'); params.push(stock); }
-    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
-    // Whitelist sort keys
-    let orderSql = 'ORDER BY name';
-    if (sort === 'name_desc') orderSql = 'ORDER BY name DESC';
-    if (sort === 'name_asc') orderSql = 'ORDER BY name ASC';
+    // Query mit Kysely aufbauen
+    let base = db.selectFrom('Product').select([
+      'id', 'categoryId', 'name', 'slug', 'unit', 'imageUrl', 'description'
+    ]);
+    if (q) {
+      const like = `%${q}%`;
+      base = base.where(eb => eb.or([
+        eb('name', 'like', like),
+        eb('slug', 'like', like),
+        eb('keywords', 'like', like),
+        eb('description', 'like', like)
+      ]));
+    }
+    if (unit) base = base.where('unit', '=', unit);
+    if (!isNaN(categoryId)) base = base.where('categoryId', '=', categoryId);
+    if (brand) base = base.where('brand', '=', brand);
+    if (stock) base = base.where('stockType', '=', stock);
+
+    let ordered = base.orderBy('name asc');
+    if (sort === 'name_desc') ordered = base.orderBy('name desc');
+    if (sort === 'name_asc') ordered = base.orderBy('name asc');
 
     // Optional: Dealer-Lookup nach PLZ/Radius. Wenn keine Händler erreichbar, liefern wir 0 Ergebnisse zurück
     let dealersFound: number | undefined = undefined;
@@ -73,13 +82,23 @@ router.get('/search', async (req, res) => {
       }
     }
 
-    const [[{ cnt }]]: any = await pool.query(`SELECT COUNT(*) AS cnt FROM Product ${whereSql}`, params);
+    const totalRow = await db.selectFrom('Product')
+      .select(({ fn }) => fn.countAll<number>().as('cnt'))
+      .if(q, qb => qb.where(eb => eb.or([
+        eb('name', 'like', `%${q}%`),
+        eb('slug', 'like', `%${q}%`),
+        eb('keywords', 'like', `%${q}%`),
+        eb('description', 'like', `%${q}%`)
+      ])))
+      .if(unit, qb => qb.where('unit', '=', unit))
+      .if(!isNaN(categoryId), qb => qb.where('categoryId', '=', categoryId))
+      .if(brand, qb => qb.where('brand', '=', brand))
+      .if(stock, qb => qb.where('stockType', '=', stock))
+      .executeTakeFirstOrThrow();
+
     const offset = (page - 1) * pageSize;
-    const [rows] = await pool.query<any[]>(
-      `SELECT id, categoryId, name, slug, unit, imageUrl, description FROM Product ${whereSql} ${orderSql} LIMIT ? OFFSET ?`,
-      [...params, pageSize, offset]
-    );
-    res.json({ items: rows, total: cnt, page, pageSize, dealersFound });
+    const items = await ordered.limit(pageSize).offset(offset).execute();
+    res.json({ items, total: Number((totalRow as any).cnt || 0), page, pageSize, dealersFound });
   } catch (err) {
     console.error('DB error on GET /api/products/search:', err);
     return res.status(503).json({ error: 'db_unavailable' });
