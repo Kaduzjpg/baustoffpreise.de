@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { pool, DealerRow } from '../db';
 import { haversineDistanceKm } from '../utils/distance';
-import fetch from 'node-fetch';
 
 const router = Router();
 
@@ -32,7 +31,7 @@ router.get('/lookup', async (req, res) => {
   } catch {}
 
   // Fetch dealers
-  const [rows] = await pool.query<DealerRow[]>(
+  const [rows] = await pool.query<any[]>(
     'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer'
   );
 
@@ -53,7 +52,7 @@ router.get('/lookup', async (req, res) => {
 // List of dealers for UI sections (carousel)
 router.get('/list', async (_req, res) => {
   try {
-    const [rows] = await pool.query<DealerRow[]>(
+    const [rows] = await pool.query<any[]>(
       'SELECT id, name, zip, city FROM Dealer ORDER BY name LIMIT 50'
     );
     res.json(rows);

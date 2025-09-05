@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { pool, DealerRow } from '../db';
 import { sendMail } from '../mailer';
 import { haversineDistanceKm } from '../utils/distance';
-import fetch from 'node-fetch';
 
 const router = Router();
 
@@ -82,7 +81,7 @@ router.post('/submit', async (req, res) => {
     );
 
     // Dealer matching
-    const [dealers] = await conn.query<DealerRow[]>(
+    const [dealers] = await conn.query<any[]>(
       'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer'
     );
 

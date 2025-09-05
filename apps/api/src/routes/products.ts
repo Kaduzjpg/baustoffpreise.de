@@ -5,7 +5,7 @@ const router = Router();
 
 router.get('/categories', async (_req, res, next) => {
   try {
-    const [rows] = await pool.query<CategoryRow[]>(
+    const [rows] = await pool.query<any[]>(
       'SELECT id, name, slug FROM `categories` WHERE parent_id IS NULL ORDER BY name'
     );
     res.json(rows);
@@ -18,7 +18,7 @@ router.get('/categories', async (_req, res, next) => {
 // Legacy full list (kept for compatibility)
 router.get('/list', async (_req, res) => {
   try {
-    const [rows] = await pool.query<ProductRow[]>(
+    const [rows] = await pool.query<any[]>(
       'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` ORDER BY name'
     );
     res.json(rows);
@@ -83,7 +83,7 @@ router.get('/search', async (req, res) => {
 
 router.get('/by-slug/:slug', async (req, res, next) => {
   try {
-    const [rows] = await pool.query<ProductRow[]>(
+    const [rows] = await pool.query<any[]>(
       'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` WHERE slug = ? LIMIT 1',
       [req.params.slug]
     );
@@ -124,7 +124,7 @@ router.get('/by-slug/:slug', async (req, res, next) => {
 
 router.get('/category/by-slug/:slug', async (req, res, next) => {
   try {
-    const [rows] = await pool.query<CategoryRow[]>(
+    const [rows] = await pool.query<any[]>(
       'SELECT id, name, slug FROM `categories` WHERE slug = ? LIMIT 1',
       [req.params.slug]
     );
@@ -138,7 +138,7 @@ router.get('/category/by-slug/:slug', async (req, res, next) => {
 
 router.get('/by-category/:slug', async (req, res, next) => {
   try {
-    const [rows] = await pool.query<ProductRow[]>(
+    const [rows] = await pool.query<any[]>(
       `SELECT p.id, p.categoryId, p.name, p.slug, p.unit, p.imageUrl, p.description, p.keywords
        FROM \`Product\` p
        JOIN \`categories\` c ON c.id = p.categoryId
@@ -156,7 +156,7 @@ router.get('/by-category/:slug', async (req, res, next) => {
 // Subcategories by category slug
 router.get('/subcategories/:slug', async (req, res) => {
   try {
-    const [rows] = await pool.query<SubcategoryRow[]>(
+    const [rows] = await pool.query<any[]>(
       `SELECT child.id, child.parent_id AS categoryId, child.name, child.slug
        FROM categories AS parent
        JOIN categories AS child ON child.parent_id = parent.id
