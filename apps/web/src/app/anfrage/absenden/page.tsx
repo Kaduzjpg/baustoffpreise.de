@@ -4,6 +4,7 @@ import { env } from '../../../lib/env';
 import { loadCart, clearCart } from '../../../lib/cart';
 import Link from 'next/link';
 import { CartItems } from './CartItems';
+import { StepHeader } from './StepHeader';
 
 export default function SubmitInquiryPage() {
   const [mounted, setMounted] = useState(false);
@@ -210,13 +211,7 @@ export default function SubmitInquiryPage() {
     <main className="container py-8 space-y-6">
       <h1 className="text-2xl font-semibold">Anfrage</h1>
 
-      {/* Progress Stepper */}
-      <ol className="flex items-center gap-4 text-sm" aria-label="Fortschritt">
-        <li className="inline-flex items-center gap-2"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">1</span> Produkte</li>
-        <li className={`inline-flex items-center gap-2 ${step === 1 ? '' : 'opacity-80'}`}><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">2</span> Kontaktdaten</li>
-        <li className={`inline-flex items-center gap-2 ${step === 2 ? '' : 'opacity-80'}`}><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">3</span> Optionen</li>
-        <li className={`inline-flex items-center gap-2 ${step === 3 ? '' : 'opacity-80'}`}><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">4</span> Prüfen & Absenden</li>
-      </ol>
+      <StepHeader step={step} />
 
       {/* Anfragekorb-Abschnitt */}
       <section className="space-y-4">
