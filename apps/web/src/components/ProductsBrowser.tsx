@@ -17,6 +17,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
   const [zip, setZip] = useState(String(initialFilters?.zip || ''));
   const [page, setPage] = useState(Number(initialFilters?.page || 1));
   const [loading, setLoading] = useState(false);
+  const [sort, setSort] = useState('name_asc');
   const [server, setServer] = useState<{ items: Product[]; total: number; page: number; pageSize: number } | null>(initialServer || null);
 
   const units = useMemo(() => Array.from(new Set(products.map(p => (p.unit || '').trim()).filter(Boolean))), [products]);
@@ -53,7 +54,8 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
       brand,
       stock,
       radius,
-      zip
+      zip,
+      sort
     });
     fetch(`/api/proxy/api/products/search?${sp.toString()}`, { signal: controller.signal, cache: 'no-store' })
       .then(r => r.json())
@@ -61,7 +63,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
       .catch(() => setServer(null))
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [q, unit, cat, brand, stock, radius, zip, page, pageSize]);
+  }, [q, unit, cat, brand, stock, radius, zip, sort, page, pageSize]);
 
   const total = server?.total ?? filtered.length;
   const current = server?.page ?? page;
@@ -98,7 +100,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-8 gap-3">
         <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Suche" className="border rounded px-3 py-2" aria-label="Suche" />
         <select value={unit} onChange={(e) => { setUnit(e.target.value); setPage(1); }} className="border rounded px-3 py-2" aria-label="Einheit filtern">
           <option value="">Alle Einheiten</option>
@@ -119,6 +121,10 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
           {[10,20,30,50,75,100].map(r => <option key={r} value={String(r)}>{r} km</option>)}
         </select>
         <input value={zip} onChange={(e) => { setZip(e.target.value); setPage(1); }} placeholder="PLZ" className="border rounded px-3 py-2" aria-label="PLZ" pattern="\d{5}" />
+        <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="border rounded px-3 py-2" aria-label="Sortierung">
+          <option value="name_asc">Name A–Z</option>
+          <option value="name_desc">Name Z–A</option>
+        </select>
       </div>
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" aria-busy>

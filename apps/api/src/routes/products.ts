@@ -38,6 +38,7 @@ router.get('/search', async (req, res) => {
     const brand = String(req.query.brand || '').trim();
     const stock = String(req.query.stock || '').trim();
     const q = String(req.query.q || '').trim();
+    const sort = String(req.query.sort || '').trim().toLowerCase();
     const zip = String(req.query.zip || '').trim();
     const radiusKm = parseInt(String(req.query.radius || ''), 10);
 
@@ -49,6 +50,10 @@ router.get('/search', async (req, res) => {
     if (brand) { where.push('brand = ?'); params.push(brand); }
     if (stock) { where.push('stockType = ?'); params.push(stock); }
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    // Whitelist sort keys
+    let orderSql = 'ORDER BY name';
+    if (sort === 'name_desc') orderSql = 'ORDER BY name DESC';
+    if (sort === 'name_asc') orderSql = 'ORDER BY name ASC';
 
     // Optional: Dealer-Lookup nach PLZ/Radius. Wenn keine Händler erreichbar, liefern wir 0 Ergebnisse zurück
     let dealersFound: number | undefined = undefined;
@@ -71,7 +76,7 @@ router.get('/search', async (req, res) => {
     const [[{ cnt }]]: any = await pool.query(`SELECT COUNT(*) AS cnt FROM Product ${whereSql}`, params);
     const offset = (page - 1) * pageSize;
     const [rows] = await pool.query<any[]>(
-      `SELECT id, categoryId, name, slug, unit, imageUrl, description FROM Product ${whereSql} ORDER BY name LIMIT ? OFFSET ?`,
+      `SELECT id, categoryId, name, slug, unit, imageUrl, description FROM Product ${whereSql} ${orderSql} LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
     );
     res.json({ items: rows, total: cnt, page, pageSize, dealersFound });
