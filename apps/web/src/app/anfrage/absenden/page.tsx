@@ -152,7 +152,7 @@ export default function SubmitInquiryPage() {
     }
   }
 
-  function canProceedFromStep1() {
+  function getStep1Errors() {
     const errs: Record<string, string> = {};
     if (!form.customerName.trim()) errs.customerName = 'Bitte Namen angeben.';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) errs.customerEmail = 'Bitte eine gültige E-Mail angeben.';
@@ -160,16 +160,17 @@ export default function SubmitInquiryPage() {
     if (!form.customerStreet.trim()) errs.customerStreet = 'Bitte Straße und Hausnummer angeben.';
     if (!form.customerCity.trim()) errs.customerCity = 'Bitte Ort angeben.';
     if (!/^\d{5}$/.test(form.customerZip)) errs.customerZip = 'Bitte eine gültige PLZ (5 Ziffern) angeben.';
-    setFieldErrors(errs);
-    return Object.keys(errs).length === 0;
+    return errs;
   }
 
   function onNext() {
     setError(null);
     if (step === 1) {
-      if (!canProceedFromStep1()) {
+      const errs = getStep1Errors();
+      if (Object.keys(errs).length) {
+        setFieldErrors(errs);
         setError('Bitte Kontakt- und Adressdaten vollständig und korrekt ausfüllen.');
-        focusFirstError(fieldErrors);
+        focusFirstError(errs);
         return;
       }
       setStep(2);
@@ -430,7 +431,7 @@ export default function SubmitInquiryPage() {
             <button type="button" onClick={onBack} className="inline-flex items-center gap-2 px-4 py-2 rounded border bg-white hover:bg-slate-50">Zurück</button>
           )}
           {step < 3 && (
-            <button type="button" onClick={onNext} disabled={step === 1 && !canProceedFromStep1()} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60">Weiter</button>
+            <button type="button" onClick={onNext} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60">Weiter</button>
           )}
           {step === 3 && (
             <button disabled={loading} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60 focus-visible:outline focus-visible:outline-2">
