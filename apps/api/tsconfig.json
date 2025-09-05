@@ -9,7 +9,7 @@
     "outDir": "dist",
     "resolveJsonModule": true
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
 
 
