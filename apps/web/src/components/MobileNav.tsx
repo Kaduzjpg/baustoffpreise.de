@@ -57,7 +57,7 @@ export function MobileNav() {
             <ul className="space-y-3 text-sm">
               <li><Link href="/produkte" onClick={() => setOpen(false)}>Produkte</Link></li>
               <li><Link href="/anfrage/absenden" onClick={() => setOpen(false)}>Anfrage</Link></li>
-              <li><Link href="#hilfe" onClick={() => setOpen(false)}>Hilfe</Link></li>
+              <li><Link href="/so-funktionierts" onClick={() => setOpen(false)}>So funktioniert’s</Link></li>
             </ul>
           </nav>
         </div>

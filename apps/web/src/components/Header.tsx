@@ -30,7 +30,7 @@ export function Header() {
         <nav className="hidden md:flex items-center gap-4 text-sm relative">
           <CategoriesMega />
           <Link href="/produkte" className="hover:underline">Produkte</Link>
-          <Link href="#so-funktionierts" className="hover:underline">So funktioniert’s</Link>
+          <Link href="/so-funktionierts" className="hover:underline">So funktioniert’s</Link>
         </nav>
         {/* Suche */}
         <form

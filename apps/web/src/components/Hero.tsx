@@ -27,7 +27,7 @@ export function Hero() {
           </ul>
           <div className="flex flex-wrap gap-3">
             <Link href="/produkte" className="btn-primary" aria-label="Produkte auswählen">Produkte auswählen</Link>
-            <Link href="#so-funktionierts" className="btn-outline" aria-label="So funktioniert’s">So funktioniert’s</Link>
+            <Link href="/so-funktionierts" className="btn-outline" aria-label="So funktioniert’s">So funktioniert’s</Link>
           </div>
         </div>
       </div>

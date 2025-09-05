@@ -27,19 +27,26 @@ function HowItWorks() {
   return (
     <section id="so-funktionierts" className="container space-y-6">
       <h2 className="text-xl font-semibold">So funktioniert’s</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="rounded-2xl border bg-white p-4 shadow-soft">
-          <div className="font-medium mb-1">Produkte auswählen</div>
-          <p className="text-sm text-slate-700">Füge Baustoffe in den Anfragekorb.</p>
+          <div className="font-medium mb-1">1. Produkte auswählen</div>
+          <p className="text-sm text-slate-700">Produkte im Katalog aussuchen und in den Anfragekorb legen.</p>
         </div>
         <div className="rounded-2xl border bg-white p-4 shadow-soft">
-          <div className="font-medium mb-1">Anfrage absenden</div>
-          <p className="text-sm text-slate-700">Kontaktdaten angeben und abschicken.</p>
+          <div className="font-medium mb-1">2. Kontaktdaten angeben</div>
+          <p className="text-sm text-slate-700">Im 3‑Schritt‑Formular Kontaktdaten und Optionen eintragen.</p>
         </div>
         <div className="rounded-2xl border bg-white p-4 shadow-soft">
-          <div className="font-medium mb-1">Angebote vergleichen</div>
-          <p className="text-sm text-slate-700">Händler melden sich innerhalb von 24–48 h.</p>
+          <div className="font-medium mb-1">3. Händler erhalten E‑Mail</div>
+          <p className="text-sm text-slate-700">Passende Händler in deiner Region bekommen die Anfrage per E‑Mail.</p>
         </div>
+        <div className="rounded-2xl border bg-white p-4 shadow-soft">
+          <div className="font-medium mb-1">4. Angebote vergleichen</div>
+          <p className="text-sm text-slate-700">Händler antworten in 24–48 h. Du vergleichst und triffst deine Wahl.</p>
+        </div>
+      </div>
+      <div>
+        <a href="/so-funktionierts" className="underline text-sm">Mehr erfahren</a>
       </div>
     </section>
   );
