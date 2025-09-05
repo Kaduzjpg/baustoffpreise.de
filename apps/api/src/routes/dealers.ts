@@ -27,6 +27,25 @@ router.get('/lookup', async (req, res) => {
     if (pc?.lat != null && pc?.lng != null) {
       qLat = Number(pc.lat);
       qLng = Number(pc.lng);
+    } else {
+      try {
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${zip}&count=1&language=de&format=json`).then(r => r.json() as any);
+        const loc = geo?.results?.[0];
+        if (loc) {
+          qLat = Number(loc.latitude);
+          qLng = Number(loc.longitude);
+          await db
+            .insertInto('PostalCode')
+            .values({ zip, city: String(loc.name || ''), lat: qLat, lng: qLng, updatedAt: new Date() })
+            .onDuplicateKeyUpdate({
+              city: (eb) => eb.ref('excluded.city'),
+              lat: (eb) => eb.ref('excluded.lat'),
+              lng: (eb) => eb.ref('excluded.lng'),
+              updatedAt: (eb) => eb.ref('excluded.updatedAt')
+            })
+            .execute();
+        }
+      } catch {}
     }
   }
 

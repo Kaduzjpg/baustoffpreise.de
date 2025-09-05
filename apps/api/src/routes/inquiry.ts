@@ -61,6 +61,25 @@ router.post('/submit', async (req, res) => {
     if (pc?.lat != null && pc?.lng != null) {
       data.lat = Number(pc.lat);
       data.lng = Number(pc.lng);
+    } else {
+      try {
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${data.customerZip}&count=1&language=de&format=json`).then(r => r.json() as any);
+        const loc = geo?.results?.[0];
+        if (loc) {
+          data.lat = Number(loc.latitude);
+          data.lng = Number(loc.longitude);
+          await db
+            .insertInto('PostalCode')
+            .values({ zip: data.customerZip, city: String(loc.name || ''), lat: data.lat, lng: data.lng, updatedAt: new Date() })
+            .onDuplicateKeyUpdate({
+              city: (eb) => eb.ref('excluded.city'),
+              lat: (eb) => eb.ref('excluded.lat'),
+              lng: (eb) => eb.ref('excluded.lng'),
+              updatedAt: (eb) => eb.ref('excluded.updatedAt')
+            })
+            .execute();
+        }
+      } catch {}
     }
   }
 
