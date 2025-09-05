@@ -54,7 +54,12 @@ function HowItWorks() {
 
 async function DealersCarousel() {
   try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/dealers/list`, { cache: 'force-cache', next: { revalidate: 3600 } });
+    const health = await fetch(`${env.NEXT_PUBLIC_API_BASE}/healthz`, { cache: 'no-store' });
+    if (!health.ok) return null;
+    const h = await health.json();
+    if (!h?.ok) return null;
+
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/dealers/list`, { cache: 'no-store' });
     const dealers = (await res.json()) as { id: number; name: string; city?: string }[];
     if (!Array.isArray(dealers) || dealers.length === 0) return null;
     return (
@@ -77,7 +82,12 @@ async function DealersCarousel() {
 
 async function CategoriesWithHover() {
   try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'force-cache', next: { revalidate: 1200 } });
+    const health = await fetch(`${env.NEXT_PUBLIC_API_BASE}/healthz`, { cache: 'no-store' });
+    if (!health.ok) return null;
+    const h = await health.json();
+    if (!h?.ok) return null;
+
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'no-store' });
     const cats = await res.json();
     if (!Array.isArray(cats) || cats.length === 0) return null;
     const top = cats;
@@ -97,7 +107,12 @@ type Product = { id: number; name: string; slug: string; unit?: string | null; i
 async function PopularProducts() {
   let products: Product[] = [];
   try {
-    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'force-cache', next: { revalidate: 1200 } });
+    const health = await fetch(`${env.NEXT_PUBLIC_API_BASE}/healthz`, { cache: 'no-store' });
+    if (!health.ok) return null;
+    const h = await health.json();
+    if (!h?.ok) return null;
+
+    const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'no-store' });
     products = ((await res.json()) as Product[]).slice(0, 6);
   } catch {}
 
