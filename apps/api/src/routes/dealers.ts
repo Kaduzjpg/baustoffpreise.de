@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { pool, db } from '../db';
-import { haversineDistanceKm } from '../utils/distance';
+import { sql } from 'kysely';
 
 const router = Router();
 
@@ -30,39 +30,24 @@ router.get('/lookup', async (req, res) => {
     }
   } catch {}
 
-  // Fetch dealers with coarse pre-filtering
-  let rows: any[] = [];
+  // SQL-Count statt JS-Haversine
   if (qLat != null && qLng != null) {
-    // MySQL: ST_Distance_Sphere mit POINT(lng,lat) und SRID 4326
-    const [rs] = await pool.query<any[]>(
-      `SELECT id, name, email, zip, city, street, radiusKm, lat, lng
-       FROM Dealer
-       WHERE location IS NOT NULL
-       AND ST_Distance_Sphere(location, ST_SRID(POINT(?, ?), 4326)) <= (? * 1000)`,
-      [qLng, qLat, radius]
-    );
-    rows = rs;
+    const row = await db
+      .selectFrom('Dealer')
+      .select(({ fn }) => fn.countAll<number>().as('cnt'))
+      .where('location', 'is not', null)
+      .where(sql`ST_Distance_Sphere(location, ST_SRID(POINT(${qLng}, ${qLat}), 4326)) <= (LEAST(COALESCE(radiusKm, ${radius}), ${radius}) * 1000)`) // min(radiusKm, radius)
+      .executeTakeFirst();
+    return res.json({ dealersFound: Number(row?.cnt || 0) });
   } else {
-    // Fallback: same ZIP prefix (first 2 digits)
     const zip2 = zip.slice(0, 2);
-    const [rs] = await pool.query<any[]>(
-      'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer WHERE LEFT(zip, 2) = ?', [zip2]
-    );
-    rows = rs;
+    const row = await db
+      .selectFrom('Dealer')
+      .select(({ fn }) => fn.countAll<number>().as('cnt'))
+      .where(sql`LEFT(zip, 2) = ${zip2}`)
+      .executeTakeFirst();
+    return res.json({ dealersFound: Number(row?.cnt || 0) });
   }
-
-  let count = 0;
-  for (const d of rows) {
-    const dealerRadius = typeof d.radiusKm === 'number' ? d.radiusKm : radius;
-    if (qLat != null && qLng != null && d.lat != null && d.lng != null) {
-      const dist = haversineDistanceKm(qLat, qLng, d.lat, d.lng);
-      if (dist <= Math.min(radius, dealerRadius)) count++;
-    } else {
-      if (d.zip?.slice(0, 2) === zip.slice(0, 2)) count++;
-    }
-  }
-
-  res.json({ dealersFound: count });
 });
 
 // List of dealers for UI sections (carousel)
