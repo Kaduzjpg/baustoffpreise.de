@@ -8,6 +8,7 @@ export default function SubmitInquiryPage() {
   const [mounted, setMounted] = useState(false);
   const [cart, setCart] = useState(loadCart());
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState({
     customerEmail: '',
     customerName: '',
@@ -146,6 +147,33 @@ export default function SubmitInquiryPage() {
     }
   }
 
+  function canProceedFromStep1() {
+    if (!form.customerName.trim()) return false;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) return false;
+    if (!form.customerStreet.trim() || !form.customerCity.trim()) return false;
+    if (!/^\d{5}$/.test(form.customerZip)) return false;
+    return true;
+  }
+
+  function onNext() {
+    setError(null);
+    if (step === 1) {
+      if (!canProceedFromStep1()) {
+        setError('Bitte Kontakt- und Adressdaten vollständig und korrekt ausfüllen.');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      setStep(3);
+    }
+  }
+
+  function onBack() {
+    setError(null);
+    if (step === 2) setStep(1);
+    else if (step === 3) setStep(2);
+  }
+
   if (!mounted) return null;
 
   return (
@@ -155,9 +183,9 @@ export default function SubmitInquiryPage() {
       {/* Progress Stepper */}
       <ol className="flex items-center gap-4 text-sm" aria-label="Fortschritt">
         <li className="inline-flex items-center gap-2"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">1</span> Produkte</li>
-        <li className="inline-flex items-center gap-2 opacity-80"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">2</span> Kontaktdaten</li>
-        <li className="inline-flex items-center gap-2 opacity-80"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">3</span> Radius</li>
-        <li className="inline-flex items-center gap-2 opacity-80"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">4</span> Zusammenfassung</li>
+        <li className={`inline-flex items-center gap-2 ${step === 1 ? '' : 'opacity-80'}`}><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">2</span> Kontaktdaten</li>
+        <li className={`inline-flex items-center gap-2 ${step === 2 ? '' : 'opacity-80'}`}><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">3</span> Optionen</li>
+        <li className={`inline-flex items-center gap-2 ${step === 3 ? '' : 'opacity-80'}`}><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-green text-white text-xs">4</span> Prüfen & Absenden</li>
       </ol>
 
       {/* Anfragekorb-Abschnitt */}
@@ -248,36 +276,41 @@ export default function SubmitInquiryPage() {
         )}
       </section>
 
-      {/* Kontaktformular */}
-      <form onSubmit={onSubmit} className="space-y-4 max-w-xl">
-        <div className="grid grid-cols-1 gap-4">
-          <div>
-            <label className="block text-sm mb-1">Name</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} required minLength={2} maxLength={160} title="Name" placeholder="Max Mustermann" />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">E-Mail</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerEmail} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} required type="email" title="E-Mail" placeholder="name@beispiel.de" />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Telefon (optional)</label>
-            <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} title="Telefon" placeholder="01234 567890" pattern="^\+?[0-9 ()-]{6,}$" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Wizard */}
+      <form onSubmit={step === 3 ? onSubmit : (e) => e.preventDefault()} className="space-y-4 max-w-xl">
+        {step === 1 && (
+          <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm mb-1">Straße & Nr.</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerStreet} onChange={(e) => setForm({ ...form, customerStreet: e.target.value })} required minLength={3} maxLength={160} title="Straße & Nr." placeholder="Musterstraße 1" />
+              <label className="block text-sm mb-1">Name</label>
+              <input className="w-full border rounded px-3 py-2" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} required minLength={2} maxLength={160} title="Name" placeholder="Max Mustermann" />
             </div>
             <div>
-              <label className="block text-sm mb-1">Ort</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerCity} onChange={(e) => setForm({ ...form, customerCity: e.target.value })} required minLength={2} maxLength={120} title="Ort" placeholder="Musterstadt" />
+              <label className="block text-sm mb-1">E-Mail</label>
+              <input className="w-full border rounded px-3 py-2" value={form.customerEmail} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} required type="email" title="E-Mail" placeholder="name@beispiel.de" />
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm mb-1">Telefon (optional)</label>
+              <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} title="Telefon" placeholder="01234 567890" pattern="^\+?[0-9 ()-]{6,}$" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm mb-1">Straße & Nr.</label>
+                <input className="w-full border rounded px-3 py-2" value={form.customerStreet} onChange={(e) => setForm({ ...form, customerStreet: e.target.value })} required minLength={3} maxLength={160} title="Straße & Nr." placeholder="Musterstraße 1" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Ort</label>
+                <input className="w-full border rounded px-3 py-2" value={form.customerCity} onChange={(e) => setForm({ ...form, customerCity: e.target.value })} required minLength={2} maxLength={120} title="Ort" placeholder="Musterstadt" />
+              </div>
+            </div>
             <div>
               <label className="block text-sm mb-1">PLZ</label>
               <input className="w-full border rounded px-3 py-2" value={form.customerZip} onChange={(e) => setForm({ ...form, customerZip: e.target.value })} required pattern="\d{5}" title="PLZ" placeholder="12345" />
             </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm mb-1">Radius: {form.radiusKm} km</label>
               <input type="range" min={10} max={100} value={form.radiusKm} onChange={(e) => setForm({ ...form, radiusKm: Number(e.target.value) })} className="w-full" title="Umkreis" />
@@ -285,41 +318,67 @@ export default function SubmitInquiryPage() {
                 <div className="text-xs text-slate-600">Händler im Umkreis: {lookupCount}</div>
               )}
             </div>
+            <div>
+              <label className="block text-sm mb-1">Nachricht (optional)</label>
+              <textarea className="w-full border rounded px-3 py-2" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={2000} title="Nachricht" placeholder="Ihre Nachricht an die Händler (optional)" />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Anhänge (max. 8 Dateien, je ≤ 5 MB)</label>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg,.webp"
+                onChange={(e) => {
+                  const selected = Array.from(e.target.files || []);
+                  const filtered = selected.filter((f) => f.size <= MAX_FILE_BYTES).slice(0, 8);
+                  if (selected.length !== filtered.length) {
+                    setError('Einige Dateien wurden verworfen, da sie größer als 5 MB sind.');
+                  }
+                  setFiles(filtered);
+                }}
+                title="Anhänge"
+              />
+              {files.length > 0 && <div className="text-xs text-slate-600 mt-1">{files.length} Datei(en) ausgewählt</div>}
+            </div>
           </div>
-          <div>
-            <label className="block text-sm mb-1">Nachricht (optional)</label>
-            <textarea className="w-full border rounded px-3 py-2" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={2000} title="Nachricht" placeholder="Ihre Nachricht an die Händler (optional)" />
+        )}
+
+        {step === 3 && (
+          <div className="space-y-3 text-sm">
+            <div className="font-medium">Zusammenfassung</div>
+            <ul className="space-y-1">
+              <li><strong>Name:</strong> {form.customerName}</li>
+              <li><strong>E-Mail:</strong> {form.customerEmail}</li>
+              {form.customerPhone && <li><strong>Telefon:</strong> {form.customerPhone}</li>}
+              <li><strong>Adresse:</strong> {form.customerStreet}, {form.customerZip} {form.customerCity}</li>
+              <li><strong>Radius:</strong> {form.radiusKm} km</li>
+              {form.message && <li><strong>Nachricht:</strong> {form.message}</li>}
+              <li><strong>Dateien:</strong> {files.length} ausgewählt</li>
+              <li><strong>Positionen:</strong> {cart.items.length}</li>
+            </ul>
+            <label className="inline-flex items-center gap-2">
+              <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} title="Zustimmung" />
+              <span>Ich stimme den AGB/Datenschutz zu.</span>
+            </label>
           </div>
-          <div>
-            <label className="block text-sm mb-1">Anhänge (max. 8 Dateien, je ≤ 5 MB)</label>
-            <input
-              type="file"
-              multiple
-              accept=".pdf,.png,.jpg,.jpeg,.webp"
-              onChange={(e) => {
-                const selected = Array.from(e.target.files || []);
-                const filtered = selected.filter((f) => f.size <= MAX_FILE_BYTES).slice(0, 8);
-                if (selected.length !== filtered.length) {
-                  setError('Einige Dateien wurden verworfen, da sie größer als 5 MB sind.');
-                }
-                setFiles(filtered);
-              }}
-              title="Anhänge"
-            />
-            {files.length > 0 && <div className="text-xs text-slate-600 mt-1">{files.length} Datei(en) ausgewählt</div>}
-          </div>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} title="Zustimmung" />
-            <span>Ich stimme den AGB/Datenschutz zu.</span>
-          </label>
-        </div>
+        )}
 
         {error && <div className="text-sm text-red-600" role="alert">{error}</div>}
 
-        <button disabled={loading} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60 focus-visible:outline focus-visible:outline-2">
-          {loading && <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
-          {loading ? 'Wird gesendet…' : 'Anfrage absenden'}
-        </button>
+        <div className="flex items-center gap-3">
+          {step > 1 && (
+            <button type="button" onClick={onBack} className="inline-flex items-center gap-2 px-4 py-2 rounded border bg-white hover:bg-slate-50">Zurück</button>
+          )}
+          {step < 3 && (
+            <button type="button" onClick={onNext} disabled={step === 1 && !canProceedFromStep1()} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60">Weiter</button>
+          )}
+          {step === 3 && (
+            <button disabled={loading} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white hover:bg-slate-800 disabled:opacity-60 focus-visible:outline focus-visible:outline-2">
+              {loading && <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
+              {loading ? 'Wird gesendet…' : 'Anfrage absenden'}
+            </button>
+          )}
+        </div>
       </form>
     </main>
   );
