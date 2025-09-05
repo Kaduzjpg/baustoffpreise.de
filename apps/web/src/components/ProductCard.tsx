@@ -2,19 +2,15 @@
 import { addItem, loadCart, saveCart } from '../lib/cart';
 import Image from 'next/image';
 import { loadFavorites, saveFavorites, toggleFavorite, isFavorite } from '../lib/favorites';
+import type { Product } from '../types/models';
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '../lib/env';
 import { getToneByCategoryId, getToneBySlug } from '../lib/categoryColors';
 
-type Props = {
-  id: number;
-  name: string;
-  slug: string;
-  unit?: string | null;
-  imageUrl?: string | null;
+type Props = Pick<Product, 'id' | 'name' | 'slug' | 'unit' | 'imageUrl'> & {
   categoryId?: number;
-  categoriesMeta?: { id: number; slug: string }[]; // optional zur Farbableitung
-  categorySlug?: string; // wenn vorhanden, direkte Farbbestimmung
+  categoriesMeta?: { id: number; slug: string }[];
+  categorySlug?: string;
 };
 
 export function ProductCard({ id, name, slug, unit, imageUrl, categoryId, categoriesMeta, categorySlug }: Props) {

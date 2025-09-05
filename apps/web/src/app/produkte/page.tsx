@@ -1,6 +1,7 @@
 import { Breadcrumbs } from '../../components/Breadcrumbs';
 import { ProductsBrowser } from '../../components/ProductsBrowser';
 import { env } from '../../lib/env';
+import type { Category, Product } from '../../types/models';
 
 export default async function ProductsPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
   // Zeige Daten nur, wenn die API/DB erreichbar ist
@@ -21,7 +22,7 @@ export default async function ProductsPage({ searchParams }: { searchParams?: Re
       </main>
     );
   }
-  let categories: any[] = [];
+  let categories: Category[] = [];
   const q = String(searchParams?.q ?? '');
   const unit = String(searchParams?.unit ?? '');
   const categoryId = String(searchParams?.categoryId ?? '');
@@ -39,7 +40,7 @@ export default async function ProductsPage({ searchParams }: { searchParams?: Re
       fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'no-store' })
     ]);
     if (sr.ok) initialServer = await sr.json();
-    if (cr.ok) categories = await cr.json();
+    if (cr.ok) categories = await cr.json() as Category[];
   } catch {}
 
   return (
@@ -47,8 +48,8 @@ export default async function ProductsPage({ searchParams }: { searchParams?: Re
       <Breadcrumbs items={[{ href: '/', label: 'Start' }, { label: 'Produkte' }]} />
       <h1 className="text-2xl font-semibold">Produkte</h1>
       <ProductsBrowser
-        products={initialServer?.items || []}
-        categories={categories || []}
+        products={(initialServer?.items as Product[]) || []}
+        categories={categories}
         pageSize={pageSize}
         initialServer={initialServer}
         initialFilters={{ q, unit, categoryId, brand, stock, radius, zip, page }}

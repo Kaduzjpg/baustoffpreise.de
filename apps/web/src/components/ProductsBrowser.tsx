@@ -3,9 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { env } from '../lib/env';
 import { ProductCard } from './ProductCard';
-
-export type Product = { id: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null; categoryId?: number };
-export type Category = { id: number; name: string; slug: string };
+import type { Product, Category } from '../types/models';
 
 export function ProductsBrowser({ products, categories, pageSize = 12, initialServer, initialFilters }: { products: Product[]; categories: Category[]; pageSize?: number; initialServer?: any; initialFilters?: Partial<Record<'q'|'unit'|'categoryId'|'brand'|'stock'|'radius'|'zip'|'page', string|number>> }) {
   const [q, setQ] = useState(String(initialFilters?.q || ''));
