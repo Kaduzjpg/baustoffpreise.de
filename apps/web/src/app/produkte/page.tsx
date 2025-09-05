@@ -2,15 +2,25 @@ import { Breadcrumbs } from '../../components/Breadcrumbs';
 import { ProductsBrowser } from '../../components/ProductsBrowser';
 import { env } from '../../lib/env';
 
-export default async function ProductsPage() {
-  let products: any[] = [];
+export default async function ProductsPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
   let categories: any[] = [];
+  const q = String(searchParams?.q ?? '');
+  const unit = String(searchParams?.unit ?? '');
+  const categoryId = String(searchParams?.categoryId ?? '');
+  const brand = String(searchParams?.brand ?? '');
+  const stock = String(searchParams?.stock ?? '');
+  const radius = String(searchParams?.radius ?? '');
+  const zip = String(searchParams?.zip ?? '');
+  const page = Math.max(1, parseInt(String(searchParams?.page ?? '1'), 10) || 1);
+  const pageSize = Math.min(60, Math.max(1, parseInt(String(searchParams?.pageSize ?? '12'), 10) || 12));
+  let initialServer: any = null;
   try {
-    const [pr, cr] = await Promise.all([
-      fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/list`, { cache: 'no-store' }),
+    const sp = new URLSearchParams({ q, unit, categoryId, brand, stock, radius, zip, page: String(page), pageSize: String(pageSize) });
+    const [sr, cr] = await Promise.all([
+      fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/search?${sp.toString()}`, { cache: 'no-store' }),
       fetch(`${env.NEXT_PUBLIC_API_BASE}/api/products/categories`, { cache: 'no-store' })
     ]);
-    if (pr.ok) products = await pr.json();
+    if (sr.ok) initialServer = await sr.json();
     if (cr.ok) categories = await cr.json();
   } catch {}
 
@@ -18,7 +28,13 @@ export default async function ProductsPage() {
     <main className="container py-8 space-y-6">
       <Breadcrumbs items={[{ href: '/', label: 'Start' }, { label: 'Produkte' }]} />
       <h1 className="text-2xl font-semibold">Produkte</h1>
-      <ProductsBrowser products={products || []} categories={categories || []} />
+      <ProductsBrowser
+        products={initialServer?.items || []}
+        categories={categories || []}
+        pageSize={pageSize}
+        initialServer={initialServer}
+        initialFilters={{ q, unit, categoryId, brand, stock, radius, zip, page }}
+      />
     </main>
   );
 }

@@ -7,17 +7,17 @@ import { ProductCard } from './ProductCard';
 export type Product = { id: number; name: string; slug: string; unit?: string | null; imageUrl?: string | null; categoryId?: number };
 export type Category = { id: number; name: string; slug: string };
 
-export function ProductsBrowser({ products, categories, pageSize = 12 }: { products: Product[]; categories: Category[]; pageSize?: number }) {
-  const [q, setQ] = useState('');
-  const [unit, setUnit] = useState('');
-  const [cat, setCat] = useState('');
-  const [brand, setBrand] = useState('');
-  const [stock, setStock] = useState(''); // lager/bestell
-  const [radius, setRadius] = useState('');
-  const [zip, setZip] = useState('');
-  const [page, setPage] = useState(1);
+export function ProductsBrowser({ products, categories, pageSize = 12, initialServer, initialFilters }: { products: Product[]; categories: Category[]; pageSize?: number; initialServer?: any; initialFilters?: Partial<Record<'q'|'unit'|'categoryId'|'brand'|'stock'|'radius'|'zip'|'page', string|number>> }) {
+  const [q, setQ] = useState(String(initialFilters?.q || ''));
+  const [unit, setUnit] = useState(String(initialFilters?.unit || ''));
+  const [cat, setCat] = useState(String(initialFilters?.categoryId || ''));
+  const [brand, setBrand] = useState(String(initialFilters?.brand || ''));
+  const [stock, setStock] = useState(String(initialFilters?.stock || ''));
+  const [radius, setRadius] = useState(String(initialFilters?.radius || ''));
+  const [zip, setZip] = useState(String(initialFilters?.zip || ''));
+  const [page, setPage] = useState(Number(initialFilters?.page || 1));
   const [loading, setLoading] = useState(false);
-  const [server, setServer] = useState<{ items: Product[]; total: number; page: number; pageSize: number } | null>(null);
+  const [server, setServer] = useState<{ items: Product[]; total: number; page: number; pageSize: number } | null>(initialServer || null);
 
   const units = useMemo(() => Array.from(new Set(products.map(p => (p.unit || '').trim()).filter(Boolean))), [products]);
 
@@ -61,7 +61,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12 }: { produ
       .catch(() => setServer(null))
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [q, unit, cat, brand, stock, page, pageSize]);
+  }, [q, unit, cat, brand, stock, radius, zip, page, pageSize]);
 
   const total = server?.total ?? filtered.length;
   const current = server?.page ?? page;
