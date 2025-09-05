@@ -19,6 +19,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
   const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState('name_asc');
   const [server, setServer] = useState<{ items: Product[]; total: number; page: number; pageSize: number } | null>(initialServer || null);
+  const [debouncedQ, setDebouncedQ] = useState(String(initialFilters?.q || ''));
 
   const units = useMemo(() => Array.from(new Set(products.map(p => (p.unit || '').trim()).filter(Boolean))), [products]);
 
@@ -41,6 +42,12 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
     });
   }, [products, q, unit, cat]);
 
+  // Debounce Suchtext
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q), 350);
+    return () => clearTimeout(t);
+  }, [q]);
+
   // SSR/CSR Hybrid: Bei Interaktion auf serverseitige Suche wechseln
   useEffect(() => {
     setLoading(true);
@@ -48,7 +55,7 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
     const sp = new URLSearchParams({
       page: String(page),
       pageSize: String(pageSize),
-      q,
+      q: debouncedQ,
       unit,
       categoryId: cat,
       brand,
@@ -63,6 +70,24 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
       .catch(() => setServer(null))
       .finally(() => setLoading(false));
     return () => controller.abort();
+  }, [debouncedQ, unit, cat, brand, stock, radius, zip, sort, page, pageSize]);
+
+  // URL-Persistenz
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('q', q.trim());
+    if (unit) params.set('unit', unit);
+    if (cat) params.set('categoryId', cat);
+    if (brand) params.set('brand', brand);
+    if (stock) params.set('stock', stock);
+    if (radius) params.set('radius', radius);
+    if (zip) params.set('zip', zip);
+    if (sort && sort !== 'name_asc') params.set('sort', sort);
+    if (page > 1) params.set('page', String(page));
+    if (pageSize !== 12) params.set('pageSize', String(pageSize));
+    const qs = params.toString();
+    const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+    window.history.replaceState(null, '', url);
   }, [q, unit, cat, brand, stock, radius, zip, sort, page, pageSize]);
 
   const total = server?.total ?? filtered.length;
@@ -98,6 +123,19 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
     );
   }
 
+  const hasActiveFilters = !!(q || unit || cat || brand || stock || radius || zip);
+  const clearAll = () => {
+    setQ('');
+    setUnit('');
+    setCat('');
+    setBrand('');
+    setStock('');
+    setRadius('');
+    setZip('');
+    setSort('name_asc');
+    setPage(1);
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-8 gap-3">
@@ -126,6 +164,32 @@ export function ProductsBrowser({ products, categories, pageSize = 12, initialSe
           <option value="name_desc">Name Z–A</option>
         </select>
       </div>
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2">
+          {q && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setQ(''); setPage(1); }} aria-label="Suche entfernen">Suche: {q} ×</button>
+          )}
+          {unit && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setUnit(''); setPage(1); }} aria-label="Einheit entfernen">Einheit: {unit} ×</button>
+          )}
+          {cat && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setCat(''); setPage(1); }} aria-label="Kategorie entfernen">Kategorie ×</button>
+          )}
+          {brand && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setBrand(''); setPage(1); }} aria-label="Marke entfernen">Marke: {brand} ×</button>
+          )}
+          {stock && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setStock(''); setPage(1); }} aria-label="Verfügbarkeit entfernen">Verfügbarkeit: {stock} ×</button>
+          )}
+          {radius && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setRadius(''); setPage(1); }} aria-label="Radius entfernen">Radius: {radius} km ×</button>
+          )}
+          {zip && (
+            <button className="inline-flex items-center gap-2 rounded-2xl border px-2 py-1 text-sm" onClick={() => { setZip(''); setPage(1); }} aria-label="PLZ entfernen">PLZ: {zip} ×</button>
+          )}
+          <button type="button" className="btn-primary ml-2" onClick={clearAll} aria-label="Alle Filter zurücksetzen">Alle Filter zurücksetzen</button>
+        </div>
+      )}
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" aria-busy>
           {Array.from({ length: 10 }).map((_, i) => (
