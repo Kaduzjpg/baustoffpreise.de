@@ -29,7 +29,7 @@ export default async function CategoriesPage() {
       <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {data.map((c) => (
           <li key={c.id}>
-            <CategoryPill href={`/categories/${c.slug}`}>{c.name}</CategoryPill>
+            <CategoryPill href={`/kategorien/${c.slug}`}>{c.name}</CategoryPill>
           </li>
         ))}
       </ul>

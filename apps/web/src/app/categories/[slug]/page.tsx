@@ -12,7 +12,7 @@ export default async function CategoryDetailPage({ params }: { params: { slug: s
 
   return (
     <main className="container py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Start' }, { href: '/categories', label: 'Kategorien' }, { label: params.slug }]} />
+      <Breadcrumbs items={[{ href: '/', label: 'Start' }, { href: '/kategorien', label: 'Kategorien' }, { label: params.slug }]} />
       <h1 className="text-2xl font-semibold mb-6">Produkte</h1>
       {subs?.length > 0 && (
         <div className="mb-6">
@@ -32,6 +32,9 @@ export default async function CategoryDetailPage({ params }: { params: { slug: s
     </main>
   );
 }
+
+
+
 
 
 
