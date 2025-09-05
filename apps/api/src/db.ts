@@ -83,6 +83,39 @@ interface DealerTable {
   location: any | null;
 }
 
+interface InquiryTable {
+  id: Generated<number>;
+  customerEmail: string;
+  customerName: string;
+  customerPhone: string | null;
+  customerZip: string;
+  customerStreet: string;
+  customerCity: string;
+  radiusKm: number;
+  message: string | null;
+  lat: number | null;
+  lng: number | null;
+  createdAt: Date;
+}
+
+interface InquiryItemTable {
+  id: Generated<number>;
+  inquiryId: number;
+  productId: number;
+  quantity: number;
+  note: string | null;
+}
+
+interface InquiryDealerNotificationTable {
+  id: Generated<number>;
+  inquiryId: number;
+  dealerId: number;
+  email: string | null;
+  status: string; // 'sent' | 'failed'
+  error: string | null;
+  createdAt: Date;
+}
+
 export interface Database {
   Product: ProductTable;
   categories: CategoriesTable;
@@ -91,6 +124,9 @@ export interface Database {
   ProductDownload: ProductDownloadTable;
   ProductBundle: ProductBundleTable;
   Dealer: DealerTable;
+  Inquiry: InquiryTable;
+  InquiryItem: InquiryItemTable;
+  InquiryDealerNotification: InquiryDealerNotificationTable;
 }
 
 export const db = new Kysely<Database>({

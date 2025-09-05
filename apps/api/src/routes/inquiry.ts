@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { pool, DealerRow } from '../db';
+import { db } from '../db';
 import { sendMail } from '../mailer';
-import { haversineDistanceKm } from '../utils/distance';
+import { sql } from 'kysely';
 
 const router = Router();
 
@@ -44,7 +44,8 @@ router.post('/submit', async (req, res) => {
   // Basic bot protection: optional Turnstile/hCaptcha token verification
   try {
     const token = (req.headers['x-turnstile-token'] as string) || (req.headers['x-hcaptcha-token'] as string);
-    if (token) {
+    if (token) 
+    {
       const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -54,49 +55,59 @@ router.post('/submit', async (req, res) => {
     }
   } catch {}
 
-  const conn = await pool.getConnection();
+  const trx = await db.transaction().begin();
   try {
-    await conn.beginTransaction();
+    const inserted = await trx
+      .insertInto('Inquiry')
+      .values({
+        customerEmail: data.customerEmail,
+        customerName: data.customerName,
+        customerPhone: data.customerPhone ?? null,
+        customerZip: data.customerZip,
+        customerStreet: data.customerStreet,
+        customerCity: data.customerCity,
+        radiusKm: data.radiusKm,
+        message: data.message ?? null,
+        lat: data.lat ?? null,
+        lng: data.lng ?? null,
+        createdAt: new Date()
+      })
+      .executeTakeFirst();
 
-    const [inquiryResult] = await conn.query<any>(
-      'INSERT INTO Inquiry (customerEmail, customerName, customerPhone, customerZip, customerStreet, customerCity, radiusKm, message, lat, lng, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-      [
-        data.customerEmail,
-        data.customerName,
-        data.customerPhone ?? null,
-        data.customerZip,
-        data.customerStreet,
-        data.customerCity,
-        data.radiusKm,
-        data.message ?? null,
-        data.lat ?? null,
-        data.lng ?? null
-      ]
-    );
-    const inquiryId = inquiryResult.insertId as number;
+    const inquiryId = Number(inserted.insertId);
 
-    const itemsValues = data.items.map((it) => [inquiryId, it.productId, it.quantity, it.note ?? null]);
-    await conn.query(
-      'INSERT INTO InquiryItem (inquiryId, productId, quantity, note) VALUES ?',[itemsValues]
-    );
-
-    // Dealer matching
-    const [dealers] = await conn.query<any[]>(
-      'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer'
-    );
-
-    const matched: DealerRow[] = [];
-    for (const d of dealers) {
-      const dealerRadius = typeof d.radiusKm === 'number' ? d.radiusKm : data.radiusKm;
-      if (data.lat != null && data.lng != null && d.lat != null && d.lng != null) {
-        const dist = haversineDistanceKm(data.lat, data.lng, d.lat, d.lng);
-        if (dist <= Math.min(data.radiusKm, dealerRadius)) matched.push(d);
-      } else {
-        if (d.zip?.slice(0, 2) === data.customerZip.slice(0, 2)) matched.push(d);
-      }
+    if (data.items.length) {
+      await trx
+        .insertInto('InquiryItem')
+        .values(
+          data.items.map((it) => ({
+            inquiryId,
+            productId: it.productId,
+            quantity: it.quantity,
+            note: it.note ?? null
+          }))
+        )
+        .execute();
     }
 
-    // Send emails to dealers
+    // Dealer matching per SQL (Koordinaten oder ZIP-Präfix)
+    let dealers: { id: number; name: string; email: string | null }[] = [];
+    if (data.lat != null && data.lng != null) {
+      dealers = await trx
+        .selectFrom('Dealer')
+        .select(['id','name','email'])
+        .where('location', 'is not', null)
+        .where(sql`ST_Distance_Sphere(location, ST_SRID(POINT(${data.lng}, ${data.lat}), 4326)) <= (LEAST(COALESCE(radiusKm, ${data.radiusKm}), ${data.radiusKm}) * 1000)`) // min(radiusKm, radius)
+        .execute();
+    } else {
+      const zip2 = data.customerZip.slice(0, 2);
+      dealers = await trx
+        .selectFrom('Dealer')
+        .select(['id','name','email','zip'])
+        .where(sql`LEFT(zip, 2) = ${zip2}`)
+        .execute();
+    }
+
     const itemsHtml = data.items
       .map(
         (i) =>
@@ -122,40 +133,30 @@ router.post('/submit', async (req, res) => {
     const attachments = (data.attachments || []).map((a) => ({ filename: a.filename, content: Buffer.from(a.content, 'base64'), contentType: a.contentType }));
 
     await Promise.all(
-      matched.map(async (d) => {
+      dealers.map(async (d) => {
         try {
-          await sendMail({ to: d.email, subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail, attachments });
-          await conn.query(
-            'INSERT INTO InquiryDealerNotification (inquiryId, dealerId, email, status, error) VALUES (?, ?, ?, ?, ?)',
-            [inquiryId, d.id, d.email, 'sent', null]
-          );
+          await sendMail({ to: d.email || '', subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail, attachments });
+          await trx
+            .insertInto('InquiryDealerNotification')
+            .values({ inquiryId, dealerId: d.id, email: d.email ?? null, status: 'sent', error: null, createdAt: new Date() })
+            .execute();
         } catch (e: any) {
           try {
-            await conn.query(
-              'INSERT INTO InquiryDealerNotification (inquiryId, dealerId, email, status, error) VALUES (?, ?, ?, ?, ?)',
-              [inquiryId, d.id, d.email, 'failed', String(e?.message || 'send_failed')]
-            );
+            await trx
+              .insertInto('InquiryDealerNotification')
+              .values({ inquiryId, dealerId: d.id, email: d.email ?? null, status: 'failed', error: String(e?.message || 'send_failed'), createdAt: new Date() })
+              .execute();
           } catch {}
         }
       })
     );
 
-    // Confirmation to customer
-    const customerHtml = `
-      <h2>Ihre Anfrage wurde versendet</h2>
-      <p>Hallo ${data.customerName},</p>
-      <p>wir haben Ihre Anfrage an ${matched.length} Händler in Ihrer Region weitergeleitet. Diese melden sich per E-Mail bei Ihnen.</p>
-    `;
-    await sendMail({ to: data.customerEmail, subject: 'Ihre Anfrage ist eingegangen', html: customerHtml });
-
-    await conn.commit();
-    res.json({ dealersNotified: matched.length, inquiryId });
+    await trx.commit();
+    res.json({ dealersNotified: dealers.length, inquiryId });
   } catch (err) {
-    await conn.rollback();
+    await trx.rollback();
     console.error(err);
     res.status(500).json({ error: 'Failed to submit inquiry' });
-  } finally {
-    conn.release();
   }
 });
 
