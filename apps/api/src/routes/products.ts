@@ -3,11 +3,14 @@ import { pool, db } from '../db';
 
 const router = Router();
 
-router.get('/categories', async (_req, res, next) => {
+router.get('/categories', async (_req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, name, slug FROM `categories` WHERE parent_id IS NULL ORDER BY name'
-    );
+    const rows = await db
+      .selectFrom('categories')
+      .select(['id', 'name', 'slug'])
+      .where('parent_id', 'is', null)
+      .orderBy('name asc')
+      .execute();
     res.json(rows);
   } catch (err) {
     console.error('DB error on GET /api/products/categories:', err);
@@ -18,9 +21,11 @@ router.get('/categories', async (_req, res, next) => {
 // Legacy full list (kept for compatibility)
 router.get('/list', async (_req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` ORDER BY name'
-    );
+    const rows = await db
+      .selectFrom('Product')
+      .select(['id', 'categoryId', 'name', 'slug', 'unit', 'imageUrl', 'description', 'keywords'])
+      .orderBy('name asc')
+      .execute();
     res.json(rows);
   } catch (err) {
     console.error('DB error on GET /api/products/list:', err);
@@ -105,36 +110,42 @@ router.get('/search', async (req, res) => {
   }
 });
 
-router.get('/by-slug/:slug', async (req, res, next) => {
+router.get('/by-slug/:slug', async (req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, categoryId, name, slug, unit, imageUrl, description, keywords FROM `Product` WHERE slug = ? LIMIT 1',
-      [req.params.slug]
-    );
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    const product = rows[0];
+    const product = await db
+      .selectFrom('Product')
+      .select(['id','categoryId','name','slug','unit','imageUrl','description','keywords'])
+      .where('slug', '=', req.params.slug)
+      .executeTakeFirst();
+    if (!product) return res.status(404).json({ error: 'Not found' });
     // Optionale Zusatzdaten (falls Tabellen existieren)
     try {
-      const [variants] = await pool.query(
-        'SELECT id, productId, format, variant, unit, sku, imageUrl FROM ProductVariant WHERE productId = ? ORDER BY id',
-        [product.id]
-      );
-      const [specs] = await pool.query(
-        'SELECT id, productId, variantId, format, variant, specKey, specValue FROM ProductSpec WHERE productId = ? ORDER BY id',
-        [product.id]
-      );
-      const [downloads] = await pool.query(
-        'SELECT id, productId, title, url FROM ProductDownload WHERE productId = ? ORDER BY id',
-        [product.id]
-      );
-      const [bundles] = await pool.query(
-        `SELECT b.relatedProductId AS id, p.name, p.slug
-         FROM ProductBundle b
-         JOIN Product p ON p.id = b.relatedProductId
-         WHERE b.productId = ?
-         ORDER BY b.sort, p.name`,
-        [product.id]
-      );
+      const variants = await db
+        .selectFrom('ProductVariant')
+        .select(['id','productId','format','variant','unit','sku','imageUrl'])
+        .where('productId', '=', product.id)
+        .orderBy('id asc')
+        .execute();
+      const specs = await db
+        .selectFrom('ProductSpec')
+        .select(['id','productId','variantId','format','variant','specKey','specValue'])
+        .where('productId', '=', product.id)
+        .orderBy('id asc')
+        .execute();
+      const downloads = await db
+        .selectFrom('ProductDownload')
+        .select(['id','productId','title','url'])
+        .where('productId', '=', product.id)
+        .orderBy('id asc')
+        .execute();
+      const bundles = await db
+        .selectFrom('ProductBundle as b')
+        .innerJoin('Product as p', 'p.id', 'b.relatedProductId')
+        .select(['b.relatedProductId as id', 'p.name as name', 'p.slug as slug'])
+        .where('b.productId', '=', product.id)
+        .orderBy('b.sort asc')
+        .orderBy('p.name asc')
+        .execute();
       return res.json({ ...product, variants, specs, downloads, bundles });
     } catch {
       // Tabellen evtl. noch nicht vorhanden – nur Produkt zurückgeben
@@ -146,30 +157,30 @@ router.get('/by-slug/:slug', async (req, res, next) => {
   }
 });
 
-router.get('/category/by-slug/:slug', async (req, res, next) => {
+router.get('/category/by-slug/:slug', async (req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, name, slug FROM `categories` WHERE slug = ? LIMIT 1',
-      [req.params.slug]
-    );
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const row = await db
+      .selectFrom('categories')
+      .select(['id','name','slug'])
+      .where('slug', '=', req.params.slug)
+      .executeTakeFirst();
+    if (!row) return res.status(404).json({ error: 'Not found' });
+    res.json(row);
   } catch (err) {
     console.error('DB error on GET /api/products/category/by-slug/:slug:', err);
     return res.status(503).json({ error: 'db_unavailable' });
   }
 });
 
-router.get('/by-category/:slug', async (req, res, next) => {
+router.get('/by-category/:slug', async (req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      `SELECT p.id, p.categoryId, p.name, p.slug, p.unit, p.imageUrl, p.description, p.keywords
-       FROM \`Product\` p
-       JOIN \`categories\` c ON c.id = p.categoryId
-       WHERE c.slug = ?
-       ORDER BY p.name`,
-      [req.params.slug]
-    );
+    const rows = await db
+      .selectFrom('Product as p')
+      .innerJoin('categories as c', 'c.id', 'p.categoryId')
+      .select(['p.id','p.categoryId','p.name','p.slug','p.unit','p.imageUrl','p.description','p.keywords'])
+      .where('c.slug', '=', req.params.slug)
+      .orderBy('p.name asc')
+      .execute();
     res.json(rows);
   } catch (err) {
     console.error('DB error on GET /api/products/by-category/:slug:', err);
@@ -180,14 +191,13 @@ router.get('/by-category/:slug', async (req, res, next) => {
 // Subcategories by category slug
 router.get('/subcategories/:slug', async (req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      `SELECT child.id, child.parent_id AS categoryId, child.name, child.slug
-       FROM categories AS parent
-       JOIN categories AS child ON child.parent_id = parent.id
-       WHERE parent.slug = ?
-       ORDER BY child.name`,
-      [req.params.slug]
-    );
+    const rows = await db
+      .selectFrom('categories as parent')
+      .innerJoin('categories as child', 'child.parent_id', 'parent.id')
+      .select(['child.id','child.parent_id as categoryId','child.name','child.slug'])
+      .where('parent.slug', '=', req.params.slug)
+      .orderBy('child.name asc')
+      .execute();
     res.json(rows);
   } catch (err) {
     console.error('DB error on GET /api/products/subcategories/:slug:', err);

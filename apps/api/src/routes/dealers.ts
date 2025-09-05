@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { pool, DealerRow } from '../db';
+import { pool, db } from '../db';
 import { haversineDistanceKm } from '../utils/distance';
 
 const router = Router();
@@ -68,9 +68,12 @@ router.get('/lookup', async (req, res) => {
 // List of dealers for UI sections (carousel)
 router.get('/list', async (_req, res) => {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, name, zip, city FROM Dealer ORDER BY name LIMIT 50'
-    );
+    const rows = await db
+      .selectFrom('Dealer')
+      .select(['id', 'name', 'zip', 'city'])
+      .orderBy('name asc')
+      .limit(50)
+      .execute();
     res.json(rows);
   } catch (err) {
     console.error('DB error on GET /api/dealers/list:', err);
