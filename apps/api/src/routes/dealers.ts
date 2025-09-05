@@ -33,15 +33,13 @@ router.get('/lookup', async (req, res) => {
   // Fetch dealers with coarse pre-filtering
   let rows: any[] = [];
   if (qLat != null && qLng != null) {
-    // Bounding box approx for given radius (in km). 1° lat ~ 111km; lng scaled by cos(lat)
-    const latDelta = radius / 111;
-    const lngDelta = radius / (111 * Math.cos((qLat * Math.PI) / 180) || 1);
-    const minLat = qLat - latDelta;
-    const maxLat = qLat + latDelta;
-    const minLng = qLng - lngDelta;
-    const maxLng = qLng + lngDelta;
+    // MySQL: ST_Distance_Sphere mit POINT(lng,lat) und SRID 4326
     const [rs] = await pool.query<any[]>(
-      'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer WHERE lat IS NOT NULL AND lng IS NOT NULL AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?',[minLat, maxLat, minLng, maxLng]
+      `SELECT id, name, email, zip, city, street, radiusKm, lat, lng
+       FROM Dealer
+       WHERE location IS NOT NULL
+       AND ST_Distance_Sphere(location, ST_SRID(POINT(?, ?), 4326)) <= (? * 1000)`,
+      [qLng, qLat, radius]
     );
     rows = rs;
   } else {
