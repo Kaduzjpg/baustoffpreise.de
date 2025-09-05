@@ -1,0 +1,20 @@
+groups:
+  - name: api.rules
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_request_duration_seconds_count{status=~"5.."}[5m])) / sum(rate(http_request_duration_seconds_count[5m])) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Hohe Fehlerquote in der API
+          description: Mehr als 5% der Requests resultieren in 5xx in den letzten 10 Minuten.
+      - alert: SlowEndpoints
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Langsame Endpunkte (p95 > 1s)
+          description: Der 95. Perzentil der Latenz liegt über 1s.
+

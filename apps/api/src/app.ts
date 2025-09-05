@@ -11,7 +11,7 @@ import { json } from 'express';
 import dealersRouter from './routes/dealers';
 import inquiryRouter from './routes/inquiry';
 import productsRouter from './routes/products';
-import client from 'prom-client';
+import { register, httpDuration } from './metrics';
 import * as Sentry from '@sentry/node';
 
 const app = express();
@@ -49,16 +49,6 @@ app.use(
   })
 );
 app.use(json({ limit: '1mb' }));
-
-// Prometheus metrics
-const register = new client.Registry();
-client.collectDefaultMetrics({ register });
-const httpDuration = new client.Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Dauer der HTTP-Requests in Sekunden',
-  labelNames: ['method', 'route', 'status']
-});
-register.registerMetric(httpDuration);
 
 app.use((req, res, next) => {
   const end = httpDuration.startTimer({ method: req.method, route: req.path });

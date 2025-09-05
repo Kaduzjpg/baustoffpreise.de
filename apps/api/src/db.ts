@@ -1,6 +1,7 @@
 import mysql from 'mysql2/promise';
 import { env } from './env';
 import { Kysely, MysqlDialect, Generated } from 'kysely';
+import { timeDb } from './metrics';
 
 export const pool = mysql.createPool({
   host: env.DB_HOST,
@@ -12,6 +13,10 @@ export const pool = mysql.createPool({
   waitForConnections: true,
   queueLimit: 0
 });
+
+// Wrap pool.query for timing convenience
+const _query = pool.query.bind(pool);
+(pool as any).query = (sql: any, params?: any) => timeDb('pool.query', _query(sql, params));
 
 export * from './types/models';
 

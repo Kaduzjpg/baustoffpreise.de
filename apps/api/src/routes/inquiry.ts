@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '../db';
 import { sendMail } from '../mailer';
 import { sql } from 'kysely';
+import { emailEvents } from '../metrics';
 
 const router = Router();
 
@@ -164,12 +165,14 @@ router.post('/submit', async (req, res) => {
       dealers.map(async (d) => {
         try {
           await sendMail({ to: d.email || '', subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail, attachments });
+          emailEvents.inc({ type: 'dealer', status: 'sent' });
           await trx
             .insertInto('InquiryDealerNotification')
             .values({ inquiryId, dealerId: d.id, email: d.email ?? null, status: 'sent', error: null, createdAt: new Date() })
             .execute();
         } catch (e: any) {
           try {
+            emailEvents.inc({ type: 'dealer', status: 'failed' });
             await trx
               .insertInto('InquiryDealerNotification')
               .values({ inquiryId, dealerId: d.id, email: d.email ?? null, status: 'failed', error: String(e?.message || 'send_failed'), createdAt: new Date() })
@@ -178,6 +181,13 @@ router.post('/submit', async (req, res) => {
         }
       })
     );
+
+    try {
+      await sendMail({ to: data.customerEmail, subject: 'Ihre Anfrage ist eingegangen', html: customerHtml });
+      emailEvents.inc({ type: 'customer', status: 'sent' });
+    } catch {
+      emailEvents.inc({ type: 'customer', status: 'failed' });
+    }
 
     await trx.commit();
     res.json({ dealersNotified: dealers.length, inquiryId });
