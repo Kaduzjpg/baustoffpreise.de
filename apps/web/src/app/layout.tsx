@@ -55,10 +55,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="de">
       <body className="min-h-screen bg-surface text-ink antialiased">
+        <a href="#main" className="skip-link">Zum Inhalt springen</a>
         {/* Sentry placeholder – hier könnte @sentry/nextjs initialisiert werden */}
         <Header />
         <ToastHost />
-        <main>{children}</main>
+        <main id="main" tabIndex={-1}>{children}</main>
         <Footer />
       </body>
     </html>
