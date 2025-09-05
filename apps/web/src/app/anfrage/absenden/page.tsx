@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { env } from '../../../lib/env';
 import { loadCart, clearCart, saveCart, updateItem, removeItem } from '../../../lib/cart';
 import Link from 'next/link';
@@ -20,6 +20,14 @@ export default function SubmitInquiryPage() {
     message: '',
     consent: false
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const phoneRef = useRef<HTMLInputElement | null>(null);
+  const streetRef = useRef<HTMLInputElement | null>(null);
+  const cityRef = useRef<HTMLInputElement | null>(null);
+  const zipRef = useRef<HTMLInputElement | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
   const [lookupCount, setLookupCount] = useState<number | null>(null);
@@ -72,31 +80,28 @@ export default function SubmitInquiryPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!form.consent) {
-      setError('Bitte stimmen Sie den Bedingungen zu.');
-      return;
-    }
-    if (!form.customerStreet.trim() || !form.customerCity.trim()) {
-      setError('Bitte vollständige Adresse angeben (Straße/Hausnummer und Ort).');
-      return;
-    }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) {
-      setError('Bitte eine gültige E-Mail angeben.');
-      return;
-    }
-    if (!/^\d{5}$/.test(form.customerZip)) {
-      setError('Bitte eine gültige PLZ angeben.');
-      return;
-    }
-    if (cart.items.length === 0) {
-      setError('Der Anfragekorb ist leer.');
+    const errs: Record<string, string> = {};
+    if (cart.items.length === 0) errs.cart = 'Der Anfragekorb ist leer.';
+    if (!form.customerName.trim()) errs.customerName = 'Bitte Namen angeben.';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) errs.customerEmail = 'Bitte eine gültige E-Mail angeben.';
+    if (form.customerPhone && !/^\+?[0-9 ()-]{6,}$/.test(form.customerPhone)) errs.customerPhone = 'Bitte eine gültige Telefonnummer angeben.';
+    if (!form.customerStreet.trim()) errs.customerStreet = 'Bitte Straße und Hausnummer angeben.';
+    if (!form.customerCity.trim()) errs.customerCity = 'Bitte Ort angeben.';
+    if (!/^\d{5}$/.test(form.customerZip)) errs.customerZip = 'Bitte eine gültige PLZ (5 Ziffern) angeben.';
+    if (!form.consent) errs.consent = 'Bitte stimmen Sie den Bedingungen zu.';
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs);
+      focusFirstError(errs);
+      setError('Bitte prüfen Sie die markierten Felder.');
       return;
     }
 
     // Clientseitige Dateigrößenprüfung
     const tooLarge = (files || []).find((f) => f.size > MAX_FILE_BYTES);
     if (tooLarge) {
-      setError(`Die Datei "${tooLarge.name}" ist größer als 5 MB.`);
+      setFieldErrors({ attachments: `Die Datei "${tooLarge.name}" ist größer als 5 MB.` });
+      setError('Bitte prüfen Sie die markierten Felder.');
+      try { fileRef.current?.focus(); } catch {}
       return;
     }
 
@@ -148,11 +153,15 @@ export default function SubmitInquiryPage() {
   }
 
   function canProceedFromStep1() {
-    if (!form.customerName.trim()) return false;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) return false;
-    if (!form.customerStreet.trim() || !form.customerCity.trim()) return false;
-    if (!/^\d{5}$/.test(form.customerZip)) return false;
-    return true;
+    const errs: Record<string, string> = {};
+    if (!form.customerName.trim()) errs.customerName = 'Bitte Namen angeben.';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.customerEmail)) errs.customerEmail = 'Bitte eine gültige E-Mail angeben.';
+    if (form.customerPhone && !/^\+?[0-9 ()-]{6,}$/.test(form.customerPhone)) errs.customerPhone = 'Bitte eine gültige Telefonnummer angeben.';
+    if (!form.customerStreet.trim()) errs.customerStreet = 'Bitte Straße und Hausnummer angeben.';
+    if (!form.customerCity.trim()) errs.customerCity = 'Bitte Ort angeben.';
+    if (!/^\d{5}$/.test(form.customerZip)) errs.customerZip = 'Bitte eine gültige PLZ (5 Ziffern) angeben.';
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
   }
 
   function onNext() {
@@ -160,6 +169,7 @@ export default function SubmitInquiryPage() {
     if (step === 1) {
       if (!canProceedFromStep1()) {
         setError('Bitte Kontakt- und Adressdaten vollständig und korrekt ausfüllen.');
+        focusFirstError(fieldErrors);
         return;
       }
       setStep(2);
@@ -175,6 +185,24 @@ export default function SubmitInquiryPage() {
   }
 
   if (!mounted) return null;
+
+  function focusFirstError(errs: Record<string, string>) {
+    const order = ['customerName', 'customerEmail', 'customerPhone', 'customerStreet', 'customerCity', 'customerZip', 'attachments'];
+    for (const key of order) {
+      if (errs[key]) {
+        try {
+          if (key === 'customerName') nameRef.current?.focus();
+          else if (key === 'customerEmail') emailRef.current?.focus();
+          else if (key === 'customerPhone') phoneRef.current?.focus();
+          else if (key === 'customerStreet') streetRef.current?.focus();
+          else if (key === 'customerCity') cityRef.current?.focus();
+          else if (key === 'customerZip') zipRef.current?.focus();
+          else if (key === 'attachments') fileRef.current?.focus();
+        } catch {}
+        break;
+      }
+    }
+  }
 
   return (
     <main className="container py-8 space-y-6">
@@ -282,29 +310,59 @@ export default function SubmitInquiryPage() {
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm mb-1">Name</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} required minLength={2} maxLength={160} title="Name" placeholder="Max Mustermann" />
+              {fieldErrors.customerName ? (
+                <input ref={nameRef} className={`w-full border rounded px-3 py-2 border-red-600`} value={form.customerName} onChange={(e) => { setForm({ ...form, customerName: e.target.value }); setFieldErrors((fe) => ({ ...fe, customerName: '' })); }} required minLength={2} maxLength={160} title="Name" placeholder="Max Mustermann" aria-invalid="true" aria-describedby="err-customerName" />
+              ) : (
+                <input ref={nameRef} className={`w-full border rounded px-3 py-2`} value={form.customerName} onChange={(e) => { setForm({ ...form, customerName: e.target.value }); }} required minLength={2} maxLength={160} title="Name" placeholder="Max Mustermann" />
+              )}
+              {fieldErrors.customerName && <p id="err-customerName" className="mt-1 text-xs text-red-600">{fieldErrors.customerName}</p>}
             </div>
             <div>
               <label className="block text-sm mb-1">E-Mail</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerEmail} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} required type="email" title="E-Mail" placeholder="name@beispiel.de" />
+              {fieldErrors.customerEmail ? (
+                <input ref={emailRef} className={`w-full border rounded px-3 py-2 border-red-600`} value={form.customerEmail} onChange={(e) => { setForm({ ...form, customerEmail: e.target.value }); setFieldErrors((fe) => ({ ...fe, customerEmail: '' })); }} required type="email" title="E-Mail" placeholder="name@beispiel.de" aria-invalid="true" aria-describedby="err-customerEmail" />
+              ) : (
+                <input ref={emailRef} className={`w-full border rounded px-3 py-2`} value={form.customerEmail} onChange={(e) => { setForm({ ...form, customerEmail: e.target.value }); }} required type="email" title="E-Mail" placeholder="name@beispiel.de" />
+              )}
+              {fieldErrors.customerEmail && <p id="err-customerEmail" className="mt-1 text-xs text-red-600">{fieldErrors.customerEmail}</p>}
             </div>
             <div>
               <label className="block text-sm mb-1">Telefon (optional)</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} title="Telefon" placeholder="01234 567890" pattern="^\+?[0-9 ()-]{6,}$" />
+              {fieldErrors.customerPhone ? (
+                <input ref={phoneRef} className={`w-full border rounded px-3 py-2 border-red-600`} value={form.customerPhone} onChange={(e) => { setForm({ ...form, customerPhone: e.target.value }); setFieldErrors((fe) => ({ ...fe, customerPhone: '' })); }} title="Telefon" placeholder="01234 567890" pattern="^\+?[0-9 ()-]{6,}$" aria-invalid="true" aria-describedby="err-customerPhone" />
+              ) : (
+                <input ref={phoneRef} className={`w-full border rounded px-3 py-2`} value={form.customerPhone} onChange={(e) => { setForm({ ...form, customerPhone: e.target.value }); }} title="Telefon" placeholder="01234 567890" pattern="^\+?[0-9 ()-]{6,}$" />
+              )}
+              {fieldErrors.customerPhone && <p id="err-customerPhone" className="mt-1 text-xs text-red-600">{fieldErrors.customerPhone}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm mb-1">Straße & Nr.</label>
-                <input className="w-full border rounded px-3 py-2" value={form.customerStreet} onChange={(e) => setForm({ ...form, customerStreet: e.target.value })} required minLength={3} maxLength={160} title="Straße & Nr." placeholder="Musterstraße 1" />
+                {fieldErrors.customerStreet ? (
+                  <input ref={streetRef} className={`w-full border rounded px-3 py-2 border-red-600`} value={form.customerStreet} onChange={(e) => { setForm({ ...form, customerStreet: e.target.value }); setFieldErrors((fe) => ({ ...fe, customerStreet: '' })); }} required minLength={3} maxLength={160} title="Straße & Nr." placeholder="Musterstraße 1" aria-invalid="true" aria-describedby="err-customerStreet" />
+                ) : (
+                  <input ref={streetRef} className={`w-full border rounded px-3 py-2`} value={form.customerStreet} onChange={(e) => { setForm({ ...form, customerStreet: e.target.value }); }} required minLength={3} maxLength={160} title="Straße & Nr." placeholder="Musterstraße 1" />
+                )}
+                {fieldErrors.customerStreet && <p id="err-customerStreet" className="mt-1 text-xs text-red-600">{fieldErrors.customerStreet}</p>}
               </div>
               <div>
                 <label className="block text-sm mb-1">Ort</label>
-                <input className="w-full border rounded px-3 py-2" value={form.customerCity} onChange={(e) => setForm({ ...form, customerCity: e.target.value })} required minLength={2} maxLength={120} title="Ort" placeholder="Musterstadt" />
+                {fieldErrors.customerCity ? (
+                  <input ref={cityRef} className={`w-full border rounded px-3 py-2 border-red-600`} value={form.customerCity} onChange={(e) => { setForm({ ...form, customerCity: e.target.value }); setFieldErrors((fe) => ({ ...fe, customerCity: '' })); }} required minLength={2} maxLength={120} title="Ort" placeholder="Musterstadt" aria-invalid="true" aria-describedby="err-customerCity" />
+                ) : (
+                  <input ref={cityRef} className={`w-full border rounded px-3 py-2`} value={form.customerCity} onChange={(e) => { setForm({ ...form, customerCity: e.target.value }); }} required minLength={2} maxLength={120} title="Ort" placeholder="Musterstadt" />
+                )}
+                {fieldErrors.customerCity && <p id="err-customerCity" className="mt-1 text-xs text-red-600">{fieldErrors.customerCity}</p>}
               </div>
             </div>
             <div>
               <label className="block text-sm mb-1">PLZ</label>
-              <input className="w-full border rounded px-3 py-2" value={form.customerZip} onChange={(e) => setForm({ ...form, customerZip: e.target.value })} required pattern="\d{5}" title="PLZ" placeholder="12345" />
+              {fieldErrors.customerZip ? (
+                <input ref={zipRef} className={`w-full border rounded px-3 py-2 border-red-600`} value={form.customerZip} onChange={(e) => { setForm({ ...form, customerZip: e.target.value }); setFieldErrors((fe) => ({ ...fe, customerZip: '' })); }} required pattern="\d{5}" title="PLZ" placeholder="12345" aria-invalid="true" aria-describedby="err-customerZip" />
+              ) : (
+                <input ref={zipRef} className={`w-full border rounded px-3 py-2`} value={form.customerZip} onChange={(e) => { setForm({ ...form, customerZip: e.target.value }); }} required pattern="\d{5}" title="PLZ" placeholder="12345" />
+              )}
+              {fieldErrors.customerZip && <p id="err-customerZip" className="mt-1 text-xs text-red-600">{fieldErrors.customerZip}</p>}
             </div>
           </div>
         )}
@@ -328,16 +386,18 @@ export default function SubmitInquiryPage() {
                 type="file"
                 multiple
                 accept=".pdf,.png,.jpg,.jpeg,.webp"
+                ref={fileRef}
                 onChange={(e) => {
                   const selected = Array.from(e.target.files || []);
                   const filtered = selected.filter((f) => f.size <= MAX_FILE_BYTES).slice(0, 8);
                   if (selected.length !== filtered.length) {
-                    setError('Einige Dateien wurden verworfen, da sie größer als 5 MB sind.');
+                    setFieldErrors((fe) => ({ ...fe, attachments: 'Einige Dateien wurden verworfen, da sie größer als 5 MB sind.' }));
                   }
                   setFiles(filtered);
                 }}
                 title="Anhänge"
               />
+              {fieldErrors.attachments && <p className="mt-1 text-xs text-red-600">{fieldErrors.attachments}</p>}
               {files.length > 0 && <div className="text-xs text-slate-600 mt-1">{files.length} Datei(en) ausgewählt</div>}
             </div>
           </div>
