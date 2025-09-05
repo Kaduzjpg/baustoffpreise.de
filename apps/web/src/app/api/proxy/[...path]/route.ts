@@ -1,12 +1,13 @@
 import { NextRequest } from 'next/server';
 import { env } from '@/lib/env';
 
-export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     const baseStr = String(env.NEXT_PUBLIC_API_BASE || '').replace(/\/+$/, '');
     const baseUrl = new URL(baseStr);
     const basePath = baseUrl.pathname.replace(/\/+$/, '');
-    const joinedPath = params.path.join('/');
+    const { path } = await params;
+    const joinedPath = path.join('/');
     const baseEndsWithApi = /(?:^|\/)api$/.test(basePath);
     const pathStartsWithApi = /^api\//.test(joinedPath);
     const normalizedPath = baseEndsWithApi && pathStartsWithApi ? joinedPath.slice(4) : joinedPath;
@@ -20,12 +21,13 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     const baseStr = String(env.NEXT_PUBLIC_API_BASE || '').replace(/\/+$/, '');
     const baseUrl = new URL(baseStr);
     const basePath = baseUrl.pathname.replace(/\/+$/, '');
-    const joinedPath = params.path.join('/');
+    const { path } = await params;
+    const joinedPath = path.join('/');
     const baseEndsWithApi = /(?:^|\/)api$/.test(basePath);
     const pathStartsWithApi = /^api\//.test(joinedPath);
     const normalizedPath = baseEndsWithApi && pathStartsWithApi ? joinedPath.slice(4) : joinedPath;
