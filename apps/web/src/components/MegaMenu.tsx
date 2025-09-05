@@ -4,9 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { env } from '../lib/env';
 import { CategoryPill } from './CategoryPill';
-
-type Category = { id: number; name: string; slug: string };
-type Sub = { id: number; categoryId: number; name: string; slug: string };
+import type { Category, Subcategory as Sub } from '../types/models';
 
 export function CategoriesMega() {
   const [cats, setCats] = useState<Category[]>([]);

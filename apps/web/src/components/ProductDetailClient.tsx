@@ -3,8 +3,8 @@
 import { useMemo, useState } from 'react';
 // Kein Link-Navigieren mehr beim Hinzufügen zum Anfragekorb
 import { addItem, loadCart, saveCart } from '../lib/cart';
+import type { ProductVariant as Variant } from '../types/models';
 
-export type Variant = { id: number; productId: number; format?: string | null; variant?: string | null; unit?: string | null; sku?: string | null; imageUrl?: string | null };
 export type Spec = { id: number; productId: number; variantId?: number | null; format?: string | null; variant?: string | null; specKey: string; specValue: string };
 
 export function ProductDetailClient({
