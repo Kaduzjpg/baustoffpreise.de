@@ -116,6 +116,14 @@ interface InquiryDealerNotificationTable {
   createdAt: Date;
 }
 
+interface PostalCodeTable {
+  zip: string;
+  city: string | null;
+  lat: number | null;
+  lng: number | null;
+  updatedAt: Date;
+}
+
 export interface Database {
   Product: ProductTable;
   categories: CategoriesTable;
@@ -127,6 +135,7 @@ export interface Database {
   Inquiry: InquiryTable;
   InquiryItem: InquiryItemTable;
   InquiryDealerNotification: InquiryDealerNotificationTable;
+  PostalCode: PostalCodeTable;
 }
 
 export const db = new Kysely<Database>({

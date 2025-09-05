@@ -55,6 +55,15 @@ router.post('/submit', async (req, res) => {
     }
   } catch {}
 
+  // Koordinaten ggf. aus PostalCode-Cache ermitteln, wenn nicht gesetzt
+  if ((data.lat == null || data.lng == null) && data.customerZip) {
+    const pc = await db.selectFrom('PostalCode').select(['lat','lng']).where('zip', '=', data.customerZip).executeTakeFirst();
+    if (pc?.lat != null && pc?.lng != null) {
+      data.lat = Number(pc.lat);
+      data.lng = Number(pc.lng);
+    }
+  }
+
   const trx = await db.transaction().begin();
   try {
     const inserted = await trx

@@ -19,16 +19,16 @@ router.get('/lookup', async (req, res) => {
   }
   const { zip, radius, lat, lng } = parse.data;
 
-  // If no coords, try to resolve zip -> lat/lng via free endpoint (Open-Meteo geocoding as example)
+  // Koordinaten ggf. aus PostalCode-Cache ermitteln
   let qLat = lat;
   let qLng = lng;
-  try {
-    if ((qLat == null || qLng == null) && zip) {
-      const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${zip}&count=1&language=de&format=json`).then(r => r.json() as any);
-      const loc = geo?.results?.[0];
-      if (loc) { qLat = Number(loc.latitude); qLng = Number(loc.longitude); }
+  if ((qLat == null || qLng == null) && zip) {
+    const pc = await db.selectFrom('PostalCode').select(['lat','lng']).where('zip', '=', zip).executeTakeFirst();
+    if (pc?.lat != null && pc?.lng != null) {
+      qLat = Number(pc.lat);
+      qLng = Number(pc.lng);
     }
-  } catch {}
+  }
 
   // SQL-Count statt JS-Haversine
   if (qLat != null && qLng != null) {
