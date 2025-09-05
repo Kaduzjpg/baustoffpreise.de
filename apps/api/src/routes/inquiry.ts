@@ -122,9 +122,22 @@ router.post('/submit', async (req, res) => {
     const attachments = (data.attachments || []).map((a) => ({ filename: a.filename, content: Buffer.from(a.content, 'base64'), contentType: a.contentType }));
 
     await Promise.all(
-      matched.map((d) =>
-        sendMail({ to: d.email, subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail, attachments })
-      )
+      matched.map(async (d) => {
+        try {
+          await sendMail({ to: d.email, subject: dealerSubject, html: dealerHtml(d.name), replyTo: data.customerEmail, attachments });
+          await conn.query(
+            'INSERT INTO InquiryDealerNotification (inquiryId, dealerId, email, status, error) VALUES (?, ?, ?, ?, ?)',
+            [inquiryId, d.id, d.email, 'sent', null]
+          );
+        } catch (e: any) {
+          try {
+            await conn.query(
+              'INSERT INTO InquiryDealerNotification (inquiryId, dealerId, email, status, error) VALUES (?, ?, ?, ?, ?)',
+              [inquiryId, d.id, d.email, 'failed', String(e?.message || 'send_failed')]
+            );
+          } catch {}
+        }
+      })
     );
 
     // Confirmation to customer
