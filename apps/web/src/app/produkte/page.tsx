@@ -3,6 +3,24 @@ import { ProductsBrowser } from '../../components/ProductsBrowser';
 import { env } from '../../lib/env';
 
 export default async function ProductsPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
+  // Zeige Daten nur, wenn die API/DB erreichbar ist
+  let healthy = false;
+  try {
+    const h = await fetch(`${env.NEXT_PUBLIC_API_BASE}/healthz`, { cache: 'no-store' });
+    healthy = h.ok;
+  } catch {}
+
+  if (!healthy) {
+    return (
+      <main className="container py-8 space-y-6">
+        <Breadcrumbs items={[{ href: '/', label: 'Start' }, { label: 'Produkte' }]} />
+        <h1 className="text-2xl font-semibold">Produkte</h1>
+        <div className="rounded-2xl border bg-white p-6 text-sm text-slate-700">
+          Datenbank derzeit nicht erreichbar. Bitte später erneut versuchen.
+        </div>
+      </main>
+    );
+  }
   let categories: any[] = [];
   const q = String(searchParams?.q ?? '');
   const unit = String(searchParams?.unit ?? '');
