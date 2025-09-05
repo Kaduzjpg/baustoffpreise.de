@@ -30,10 +30,28 @@ router.get('/lookup', async (req, res) => {
     }
   } catch {}
 
-  // Fetch dealers
-  const [rows] = await pool.query<any[]>(
-    'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer'
-  );
+  // Fetch dealers with coarse pre-filtering
+  let rows: any[] = [];
+  if (qLat != null && qLng != null) {
+    // Bounding box approx for given radius (in km). 1° lat ~ 111km; lng scaled by cos(lat)
+    const latDelta = radius / 111;
+    const lngDelta = radius / (111 * Math.cos((qLat * Math.PI) / 180) || 1);
+    const minLat = qLat - latDelta;
+    const maxLat = qLat + latDelta;
+    const minLng = qLng - lngDelta;
+    const maxLng = qLng + lngDelta;
+    const [rs] = await pool.query<any[]>(
+      'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer WHERE lat IS NOT NULL AND lng IS NOT NULL AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?',[minLat, maxLat, minLng, maxLng]
+    );
+    rows = rs;
+  } else {
+    // Fallback: same ZIP prefix (first 2 digits)
+    const zip2 = zip.slice(0, 2);
+    const [rs] = await pool.query<any[]>(
+      'SELECT id, name, email, zip, city, street, radiusKm, lat, lng FROM Dealer WHERE LEFT(zip, 2) = ?', [zip2]
+    );
+    rows = rs;
+  }
 
   let count = 0;
   for (const d of rows) {
