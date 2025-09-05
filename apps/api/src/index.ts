@@ -8,6 +8,7 @@ if (process.env.SENTRY_DSN) {
 }
 import { env } from './env';
 import { app } from './app';
+import * as Sentry from '@sentry/node';
 
 app.listen(Number(env.PORT), () => {
   console.log(`API listening on :${env.PORT}`);

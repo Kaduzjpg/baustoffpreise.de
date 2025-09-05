@@ -22,6 +22,7 @@
     "mysql2": "^3.14.4",
     "nanoid": "^5.0.7",
     "nodemailer": "^6.9.13",
+    "prom-client": "^15.1.3",
     "rate-limiter-flexible": "^5.0.1",
     "zod": "^3.23.8"
   },

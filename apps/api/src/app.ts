@@ -11,6 +11,8 @@ import { json } from 'express';
 import dealersRouter from './routes/dealers';
 import inquiryRouter from './routes/inquiry';
 import productsRouter from './routes/products';
+import client from 'prom-client';
+import * as Sentry from '@sentry/node';
 
 const app = express();
 
@@ -48,6 +50,24 @@ app.use(
 );
 app.use(json({ limit: '1mb' }));
 
+// Prometheus metrics
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+const httpDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Dauer der HTTP-Requests in Sekunden',
+  labelNames: ['method', 'route', 'status']
+});
+register.registerMetric(httpDuration);
+
+app.use((req, res, next) => {
+  const end = httpDuration.startTimer({ method: req.method, route: req.path });
+  res.on('finish', () => {
+    end({ status: String(res.statusCode) });
+  });
+  next();
+});
+
 const rateLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
 const inquiryLimiter = new RateLimiterMemory({ points: 5, duration: 60 });
 app.use(async (req, res, next) => {
@@ -68,6 +88,11 @@ app.get('/healthz', async (_req, res) => {
   }
 });
 
+app.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
 app.use('/api/dealers', dealersRouter);
 app.use('/api/inquiry', async (req, res, next) => {
   try {
@@ -82,6 +107,7 @@ app.use('/api/products', productsRouter);
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Central error handler
   try {
+    try { Sentry.captureException(err); } catch {}
     const rid = (_req as any)?.id;
     console.error(JSON.stringify({ ts: new Date().toISOString(), level: 'error', requestId: rid, msg: err?.message || 'Unhandled error' }));
   } catch {
